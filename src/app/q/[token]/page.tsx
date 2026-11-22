@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { CARD_TOKEN_RE } from "@/lib/token";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -18,7 +19,7 @@ const fmt = new Intl.NumberFormat("fr-DZ");
 async function CardView({ params }: Props) {
   const { token } = await params;
   // 16 random bytes in base64url = 22 chars. Reject anything else before hitting the DB.
-  if (!/^[A-Za-z0-9_-]{22}$/.test(token)) notFound();
+  if (!CARD_TOKEN_RE.test(token)) notFound();
 
   const card = await prisma.card.findUnique({
     where: { token },
