@@ -1,7 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
-// Reuse one client in dev, so hot reload does not open new connections each time
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function createClient() {
