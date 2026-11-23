@@ -161,3 +161,12 @@ model OrderItem {
 
   @@index([orderId])
 }
+model Commune {
+  id         Int    @id @default(autoincrement())
+  wilayaCode Int
+  name       String
+  nameAr     String
+
+  @@unique([wilayaCode, name])
+  @@index([wilayaCode])
+}
