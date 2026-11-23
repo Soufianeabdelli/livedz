@@ -14,6 +14,8 @@
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
     "dotenv": "18.0.10",
+    "firebase": "13.4.0",
+    "firebase-admin": "14.5.1",
     "next": "16.4.6",
     "pg": "8.23.1",
     "react": "19.3.0",
@@ -35,7 +37,8 @@
     "vitest": "5.1.1"
   },
   "overrides": {
-    "effect": "3.22.5"
+    "effect": "3.22.5",
+    "@grpc/grpc-js": "1.14.7"
   },
   "allowScripts": {
     "prisma@7.10.1": true,
