@@ -11,8 +11,8 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "7.10.0",
-    "@prisma/client": "7.10.0",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
     "dotenv": "18.0.10",
     "next": "16.4.6",
     "pg": "8.23.1",
@@ -28,10 +28,18 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
-    "prisma": "7.10.0",
+    "prisma": "7.10.1",
     "tailwindcss": "4.3.3",
     "tsx": "4.23.15",
     "typescript": "^5",
     "vitest": "5.1.1"
+  },
+  "overrides": {
+    "effect": "3.22.5"
+  },
+  "allowScripts": {
+    "prisma@7.10.1": true,
+    "@prisma/engines@7.10.1": true,
+    "esbuild@0.28.2": true
   }
 }
