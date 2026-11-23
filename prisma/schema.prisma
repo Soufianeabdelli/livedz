@@ -47,6 +47,7 @@ model Merchant {
   affiliates Affiliate[]
   cards      Card[]
   orders     Order[]
+  courierAccounts CourierAccount[]
 }
 
 model Membership {
@@ -169,4 +170,16 @@ model Commune {
 
   @@unique([wilayaCode, name])
   @@index([wilayaCode])
+}
+model CourierAccount {
+  id             String   @id @default(cuid())
+  merchantId     String
+  courier        String
+  credentialsEnc String
+  hint           String
+  fromWilaya     Int
+  createdAt      DateTime @default(now())
+  merchant       Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, courier])
 }
