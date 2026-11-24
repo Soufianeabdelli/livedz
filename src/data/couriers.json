@@ -1,0 +1,1171 @@
+[
+ {
+  "key": "abdelivery",
+  "name": "AB Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "alania",
+  "name": "Alania Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "allolivraison",
+  "name": "Allo Livraison",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "amana",
+  "name": "Amana Speed",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "andersondelivery",
+  "name": "Anderson Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "aranex",
+  "name": "Aranex",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "areex",
+  "name": "Areex",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "assildelivery",
+  "name": "Assil Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "atlasexpress",
+  "name": "Atlas Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "baconsult",
+  "name": "BA Consult",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "bfkexpress",
+  "name": "BFK Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "boogi",
+  "name": "Boogi Technologie",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "championlogistics",
+  "name": "Champion Logistics",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "chronorex",
+  "name": "Chronorex",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "cirtaexpress",
+  "name": "Cirta Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "colex",
+  "name": "Colex",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "colireli",
+  "name": "Colireli",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "colivraison",
+  "name": "Colivraison",
+  "platform": "colivraison",
+  "aliases": [
+   "coliv",
+   "colivraison express",
+   "كوليفريزون"
+  ],
+  "requiredCredentials": [
+   "publicKey",
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "colizone",
+  "name": "Colizone",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "conexlog",
+  "name": "Conexlog",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "coyoteexpress",
+  "name": "Coyote Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "delivromail",
+  "name": "Delivromail",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "dhd",
+  "name": "DHD Livraison",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "distazero",
+  "name": "Distazero",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "e48hrlivraison",
+  "name": "48Hr Livraison",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "easyandspeed",
+  "name": "Easy & Speed",
+  "platform": "yalidine",
+  "aliases": [],
+  "requiredCredentials": [
+   "apiId",
+   "apiToken"
+  ],
+  "cancel": true,
+  "label": true
+ },
+ {
+  "key": "ecomdelivery",
+  "name": "Ecom Delivery",
+  "platform": "ecomdelivery",
+  "aliases": [
+   "ecom delivery",
+   "ecom-dz",
+   "ecom livraison"
+  ],
+  "requiredCredentials": [
+   "apiKey",
+   "apiToken"
+  ],
+  "cancel": true,
+  "label": false
+ },
+ {
+  "key": "economiqua",
+  "name": "Economiqua",
+  "platform": "yalidine",
+  "aliases": [],
+  "requiredCredentials": [
+   "apiId",
+   "apiToken"
+  ],
+  "cancel": true,
+  "label": true
+ },
+ {
+  "key": "ecorapideexpress",
+  "name": "Eco Rapide Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "ecotrack",
+  "name": "Ecotrack (any tenant)",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "elguidedelivery",
+  "name": "El Guide Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "elogistia",
+  "name": "Elogistia",
+  "platform": "elogistia",
+  "aliases": [
+   "e logistia",
+   "elogistia express",
+   "ايلوجيستيا",
+   "الوجيستيا"
+  ],
+  "requiredCredentials": [
+   "apiKey"
+  ],
+  "cancel": true,
+  "label": true
+ },
+ {
+  "key": "expediachrono",
+  "name": "Expedia Chrono",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "fasthorse",
+  "name": "Fast Horse Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "fretdirect",
+  "name": "FRET.Direct",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "fzdelivery",
+  "name": "FZ Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "golivri",
+  "name": "GOLIVRI",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "gsecommerce",
+  "name": "GS Ecommerce",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "guepex",
+  "name": "Guepex",
+  "platform": "yalidine",
+  "aliases": [],
+  "requiredCredentials": [
+   "apiId",
+   "apiToken"
+  ],
+  "cancel": true,
+  "label": true
+ },
+ {
+  "key": "hhdexpress",
+  "name": "HHD Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "imir",
+  "name": "Imir Logistics",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "jaguar",
+  "name": "Jaguar Livraison",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "joexpress",
+  "name": "Jo Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "lihlihexpress",
+  "name": "LIH LIH Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "lynx",
+  "name": "Lynx Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "majorex",
+  "name": "Majorex",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "maystro",
+  "name": "Maystro",
+  "platform": "maystro",
+  "aliases": [
+   "maystro delivery"
+  ],
+  "requiredCredentials": [
+   "apiKey"
+  ],
+  "cancel": true,
+  "label": true
+ },
+ {
+  "key": "mazaya",
+  "name": "Mazaya Logistics",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "mdm",
+  "name": "MDM Express",
+  "platform": "mdm",
+  "aliases": [
+   "mdm express",
+   "ام دي ام اكسبريس"
+  ],
+  "requiredCredentials": [
+   "apiKey"
+  ],
+  "cancel": false,
+  "label": false
+ },
+ {
+  "key": "medexpress",
+  "name": "Med Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "monohub",
+  "name": "Mono Hub",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "msmgo",
+  "name": "MSM Go",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "navexdelivery",
+  "name": "Navex Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "neardelivery",
+  "name": "Near Delivery",
+  "platform": "neardelivery",
+  "aliases": [
+   "near delivery",
+   "near",
+   "نير ديليفري"
+  ],
+  "requiredCredentials": [
+   "apiKey",
+   "apiSecret"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "negmarexpress",
+  "name": "Negmar Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "noest",
+  "name": "NOEST",
+  "platform": "noest",
+  "aliases": [
+   "noest express"
+  ],
+  "requiredCredentials": [
+   "apiToken",
+   "guid"
+  ],
+  "cancel": true,
+  "label": true
+ },
+ {
+  "key": "oksbox",
+  "name": "OKS Box",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "omexpress",
+  "name": "OM Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "oneexpress",
+  "name": "One Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "ontimeexpress",
+  "name": "On Time Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "osenexpress",
+  "name": "Osen Express",
+  "platform": "osenexpress",
+  "aliases": [
+   "osen",
+   "osen express",
+   "اوسن اكسبريس"
+  ],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "ovred",
+  "name": "Ovred",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "packers",
+  "name": "Packers",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "pdex",
+  "name": "PDEX",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "prest",
+  "name": "Prest",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "quickdeliverydz",
+  "name": "Quick Delivery DZ",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "rblivraison",
+  "name": "RB Livraison",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "redex",
+  "name": "Red Ex",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "rexlivraison",
+  "name": "Rex Livraison",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "rihalexpress",
+  "name": "Rihal Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "rj360express",
+  "name": "RJ 360 Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "rmexpress",
+  "name": "RM Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "rocketdelivery",
+  "name": "Rocket Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "royaumedelivery",
+  "name": "Royaume Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "rsexpress",
+  "name": "RS Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "rutaexpress",
+  "name": "Ruta Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "salvadelivery",
+  "name": "Salva Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "samex",
+  "name": "Samex",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "sbl",
+  "name": "SBL Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "siexpress",
+  "name": "SI Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "speeddelivery",
+  "name": "Speed Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "speedmail",
+  "name": "Speed Mail",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "sultancolisexpress",
+  "name": "Sultan Colis Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "swiftexpress",
+  "name": "Swift Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "tawsilstar",
+  "name": "Tawsil Star",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "terminaldelivery",
+  "name": "Terminal Delivery",
+  "platform": "terminaldelivery",
+  "aliases": [
+   "terminal",
+   "terminal delivery",
+   "تيرمينال ديليفري"
+  ],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "tslexpress",
+  "name": "TSL Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "ultraexpress",
+  "name": "Ultra Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "univerdelivery",
+  "name": "Univer Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "vitrans",
+  "name": "Vitrans",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "wassimexpress",
+  "name": "Wassim Express",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "wecan",
+  "name": "We Can Services",
+  "platform": "yalidine",
+  "aliases": [],
+  "requiredCredentials": [
+   "apiId",
+   "apiToken"
+  ],
+  "cancel": true,
+  "label": true
+ },
+ {
+  "key": "weeweedelivery",
+  "name": "Wee Wee Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "windelivery",
+  "name": "Win Delivery",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "worldexpress",
+  "name": "WorldExpress",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "yalidine",
+  "name": "Yalidine",
+  "platform": "yalidine",
+  "aliases": [],
+  "requiredCredentials": [
+   "apiId",
+   "apiToken"
+  ],
+  "cancel": true,
+  "label": true
+ },
+ {
+  "key": "yalitec",
+  "name": "Yalitec",
+  "platform": "yalidine",
+  "aliases": [],
+  "requiredCredentials": [
+   "apiId",
+   "apiToken"
+  ],
+  "cancel": true,
+  "label": true
+ },
+ {
+  "key": "zimou",
+  "name": "Zimou Express",
+  "platform": "zimou",
+  "aliases": [
+   "zimou express"
+  ],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "zinyatec",
+  "name": "Zinya Tec",
+  "platform": "ecotrack",
+  "aliases": [],
+  "requiredCredentials": [
+   "token"
+  ],
+  "cancel": false,
+  "label": true
+ },
+ {
+  "key": "zrexpress",
+  "name": "ZR Express",
+  "platform": "procolis",
+  "aliases": [
+   "procolis",
+   "zr express",
+   "abexexpress",
+   "leopardexpress",
+   "colilog",
+   "flashdelivery"
+  ],
+  "requiredCredentials": [
+   "token",
+   "key"
+  ],
+  "cancel": false,
+  "label": false
+ },
+ {
+  "key": "zrexpressnew",
+  "name": "ZR Express (new platform)",
+  "platform": "zrexpressapp",
+  "aliases": [
+   "zrnew",
+   "zr express new platform",
+   "zr express nouvelle plateforme",
+   "zrexpressapp"
+  ],
+  "requiredCredentials": [
+   "apiKey",
+   "tenantId"
+  ],
+  "cancel": false,
+  "label": false
+ }
+]

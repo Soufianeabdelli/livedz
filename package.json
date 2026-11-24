@@ -10,7 +10,8 @@
     "test": "vitest run",
     "db:seed": "tsx prisma/seed.ts",
     "db:claim": "tsx prisma/claim.ts",
-    "db:communes": "tsx prisma/seed-communes.ts"
+    "db:communes": "tsx prisma/seed-communes.ts",
+    "couriers:sync": "node scripts/sync-couriers.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",
