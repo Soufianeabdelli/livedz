@@ -31,6 +31,7 @@ async function Dashboard() {
         <a href="/dashboard" className="text-sm underline">Actualiser</a>
       </div>
       <OrdersList orders={orders} />
+      <a href="/dashboard/shipping" className="block rounded border p-3 text-center">Livraison</a>
       <LogoutButton />
     </main>
   );
