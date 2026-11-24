@@ -1,23 +1,39 @@
 "use client";
 
-import { startTransition, useActionState, useState, type FormEvent } from "react";
+import { startTransition, useActionState, useMemo, useState, type FormEvent } from "react";
 import { submitOrder } from "./actions";
 import { MSG } from "./messages";
 import { Success } from "./success";
 import { VariantPicker, type V } from "./variant-picker";
-import { DZ_REGIONS } from "@/lib/countries/dz/regions";
+import { DZ_REGIONS, resolveDzRegion } from "@/lib/countries/dz/regions";
 import type { OrderFormState } from "@/lib/order-form";
 
 const INIT: OrderFormState = { status: "idle" };
+const fmt = new Intl.NumberFormat("fr-DZ");
 
-type Props = { token: string; idempotencyKey: string; variants: V[] };
+type DeliveryRateInfo = { wilayaCode: number; homeDzd: number; stopdeskDzd: number };
+type Props = {
+  token: string;
+  idempotencyKey: string;
+  variants: V[];
+  deliveryRates?: DeliveryRateInfo[];
+};
 
-export function OrderForm({ token, idempotencyKey, variants }: Props) {
+export function OrderForm({ token, idempotencyKey, variants, deliveryRates = [] }: Props) {
   const [state, action, pending] = useActionState(submitOrder, INIT);
-  const [delivery, setDelivery] = useState("STOPDESK");
+  const [delivery, setDelivery] = useState<"STOPDESK" | "HOME">("STOPDESK");
+  const [regionKey, setRegionKey] = useState("");
+
+  const fee = useMemo(() => {
+    const r = resolveDzRegion(regionKey);
+    if (!r) return null;
+    const rate = deliveryRates.find((d) => d.wilayaCode === r.courierCode);
+    if (!rate) return null;
+    return delivery === "HOME" ? rate.homeDzd : rate.stopdeskDzd;
+  }, [regionKey, delivery, deliveryRates]);
 
   if (state.status === "success") {
-    return <Success refCode={state.ref} totalDzd={state.totalDzd} />;
+    return <Success refCode={state.ref} totalDzd={state.totalDzd + (state.shippingFeeDzd ?? 0)} />;
   }
 
   const bad = (f: string) => state.status === "error" && state.fields.includes(f);
@@ -40,7 +56,13 @@ export function OrderForm({ token, idempotencyKey, variants }: Props) {
       <input name="customerName" placeholder="Nom complet" autoComplete="name" required className={box("customerName")} />
       <input name="phone" type="tel" inputMode="tel" placeholder="Telephone (05 50 12 34 56)" autoComplete="tel" required className={box("phone")} />
 
-      <select name="region" required defaultValue="" className={box("region")}>
+      <select
+        name="region"
+        required
+        value={regionKey}
+        onChange={(e) => setRegionKey(e.target.value)}
+        className={box("region")}
+      >
         <option value="" disabled>Wilaya</option>
         {DZ_REGIONS.map((r) => (
           <option key={r.key} value={r.key}>{r.name}</option>
@@ -56,6 +78,11 @@ export function OrderForm({ token, idempotencyKey, variants }: Props) {
           <input type="radio" name="deliveryType" value="HOME" checked={delivery === "HOME"} onChange={() => setDelivery("HOME")} /> Domicile
         </label>
       </div>
+      {fee !== null && (
+        <p className="text-sm text-gray-600">
+          Livraison ({delivery === "HOME" ? "Domicile" : "Bureau"}) : <b>{fmt.format(fee)} DA</b>
+        </p>
+      )}
       {delivery === "HOME" && (
         <textarea name="address" placeholder="Adresse complete" required rows={2} className={box("address")} />
       )}

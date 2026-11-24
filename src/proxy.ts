@@ -12,6 +12,7 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Validates tokens for both /q/{token} and /l/{sessionToken}
   const token = pathname.split("/")[2] ?? "";
   if (!CARD_TOKEN_RE.test(token)) {
     return new NextResponse("Not found", {
@@ -22,4 +23,4 @@ export function proxy(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/q/:path*", "/dashboard/:path*"] };
+export const config = { matcher: ["/q/:path*", "/l/:path*", "/dashboard/:path*"] };

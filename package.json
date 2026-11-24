@@ -11,7 +11,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:claim": "tsx prisma/claim.ts",
     "db:communes": "tsx prisma/seed-communes.ts",
-    "couriers:sync": "node scripts/sync-couriers.mjs"
+    "couriers:sync": "node scripts/sync-couriers.mjs",
+    "worker:live": "tsx src/worker/live-worker.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",
@@ -24,6 +25,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "0.0.1",
+    "tiktok-live-connector": "^2.5.0",
     "zod": "4.6.7"
   },
   "devDependencies": {

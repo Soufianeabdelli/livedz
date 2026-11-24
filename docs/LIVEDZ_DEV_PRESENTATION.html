@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LiveDZ — Engineering Architecture &amp; Project Plan</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --surface: #131a2e;
+      --surface-2: #1a2340;
+      --border: #2a365f;
+      --text: #eef2ff;
+      --muted: #9aa7cc;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      padding: 32px 24px 64px;
+    }
+    .container { max-width: 1080px; margin: 0 auto; }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    h1 { margin: 0; font-size: 2rem; letter-spacing: -0.02em; }
+    .subtitle { color: var(--muted); margin: 6px 0 0; }
+    .meta {
+      text-align: right;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .badge.done { color: var(--green); border-color: rgba(34,197,94,0.4); }
+    .badge.next { color: var(--amber); border-color: rgba(245,158,11,0.4); }
+    .badge.plan { color: var(--accent); border-color: rgba(56,189,248,0.4); }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      page-break-inside: avoid;
+    }
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.25rem;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+    h3 { margin: 18px 0 8px; font-size: 1rem; color: #fff; }
+    p { margin: 8px 0; color: var(--muted); }
+    code {
+      background: var(--surface-2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.88em;
+      color: #c7d2fe;
+    }
+    pre {
+      background: #070b16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #dbeafe;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th { color: #cbd5e1; font-weight: 600; background: var(--surface-2); }
+    td { color: var(--muted); }
+    td strong { color: var(--text); }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .card h4 { margin: 0 0 8px; color: #fff; font-size: 1rem; }
+    .card p { font-size: 0.88rem; margin: 0; }
+    @media print {
+      body { background: #fff; color: #111827; padding: 0; }
+      section, .card { background: #fff; border-color: #d1d5db; }
+      h2 { color: #0369a1; border-color: #d1d5db; }
+      p, td, .subtitle, .meta { color: #374151; }
+      td strong, h1, h3, .card h4 { color: #111827; }
+      th { background: #f3f4f6; color: #111827; }
+      pre, code { background: #f8fafc; color: #1e293b; border-color: #cbd5e1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>LiveDZ — Engineering &amp; Architecture Plan</h1>
+        <p class="subtitle">Hybrid TikTok Live &amp; QR Cash-on-Delivery Platform for Algeria</p>
+      </div>
+      <div class="meta">
+        <div>Prepared for: <strong>Development Team</strong></div>
+        <div>Date: 24 November 2026</div>
+        <div>Print / Export PDF: <code>Ctrl + P</code></div>
+      </div>
+    </header>
+
+    <section>
+      <h2>1. Product &amp; Channel Architecture</h2>
+      <p>Three order intake channels converge into one multi-tenant PostgreSQL/Prisma pipeline with atomic stock reservation, Algerian phone/wilaya normalization, phone confirmation tracking, and courier integration.</p>
+      <div class="grid-3">
+        <div class="card">
+          <h4>Channel 1: QR / Product Link</h4>
+          <p><code>/q/{cardToken}</code> — Buyer picks variant, sees wilaya delivery rate, submits phone + address. Lands in <code>DRAFT</code> with atomic stock reserve.</p>
+        </div>
+        <div class="card">
+          <h4>Channel 2: TikTok Live + Claim Link</h4>
+          <p>Worker parses comments (<code>K1</code>, <code>كود3</code>, <code>K1 42</code>) into expiring <code>DRAFT</code>s. Buyer completes coordinates at <code>/l/{sessionToken}</code> &rarr; <code>PENDING_CONFIRMATION</code>.</p>
+        </div>
+        <div class="card">
+          <h4>Channel 3: Manual Dashboard</h4>
+          <p>Merchant enters phone/DM orders directly in the dashboard and manages all statuses through payout.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. Deployment &amp; Worker Topology</h2>
+      <p>Live WebSocket connections run outside Next.js so web deployments and serverless/multi-instance scaling never drop active TikTok streams.</p>
+      <pre>┌──────────────────────┐        DB Commands (PENDING / STOPPING)       ┌──────────────────────────┐
+│  Web App (Next.js)   │ ────────────────────────────────────────────► │  PostgreSQL 16 (Prisma)  │
+│  /api/live/*         │ ◄──────────────────────────────────────────── │  LiveSession + Orders    │
+│  /q/[token]          │        Status, Counters, Claim Lookup         │  Variant Stock + Calls   │
+│  /l/[token]          │                                               │  BuyerReputation + Rates │
+│  /api/webhooks/...   │                                               └────────────┬─────────────┘
+└──────────────────────┘                                                            │
+                                        FOR UPDATE SKIP LOCKED + 10s Heartbeat      │
+                                                                                    ▼
+                                                                       ┌──────────────────────────┐
+                                                                       │ Live Worker (Node / TSX) │
+                                                                       │ · tiktok-live-connector  │
+                                                                       │ · Parser + Question Log  │
+                                                                       │ · Draft Expiry Sweeper   │
+                                                                       └──────────────────────────┘</pre>
+    </section>
+
+    <section>
+      <h2>3. Critical Production Issues Resolved</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Problem Identified</th>
+            <th>Implemented Solution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Live Buyer Details</strong></td>
+            <td>TikTok comments lack phone/address; DRAFT orders strand without buyer info.</td>
+            <td>Added <code>/l/{sessionToken}</code> claim portal. Buyer verifies <code>@handle</code>, sees reserved items &amp; delivery fees, submits coordinates &rarr; <code>PENDING_CONFIRMATION</code>. Expired drafts release stock via sweeper.</td>
+          </tr>
+          <tr>
+            <td><strong>Process Model</strong></td>
+            <td>In-memory Map breaks across serverless invocations and server restarts.</td>
+            <td>Replaced with DB-backed <code>LiveSession</code> table, atomic <code>FOR UPDATE SKIP LOCKED</code> leases, 10s heartbeats, and standalone <code>src/worker/live-worker.ts</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Courier Idempotency</strong></td>
+            <td>Rolling back timeouts to <code>CONFIRMED</code> risks creating duplicate parcels on retry.</td>
+            <td>Added <code>SHIPMENT_UNKNOWN</code> state on timeouts/5xx, <code>shipAttempts</code> + <code>shipmentAttemptKey</code> (<code>orderId-aN</code>), <code>Idempotency-Key</code> header, and <code>reconcileUnknownShipment()</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Stock Consistency</strong></td>
+            <td>Conflicting reserve vs deduct semantics &amp; comment spam locking inventory.</td>
+            <td>Unified Reserve &rarr; Commit (<code>SHIPPED</code>) &rarr; Release (<code>CANCELLED</code>/<code>EXPIRED</code>) &rarr; Restock (<code>RETURNED</code>), plus 10-min per-viewer/product anti-spam dedup.</td>
+          </tr>
+          <tr>
+            <td><strong>Algerian COD Ops</strong></td>
+            <td>Missing call attempts, return restocking, buyer risk flags, and wilaya fees.</td>
+            <td>Built <code>CallLog</code> (auto-moves to <code>AWAITING_CUSTOMER</code> at 3 no-answers), <code>BuyerReputation</code> risk alerts, <code>DeliveryRate</code> per wilaya, and <code>/api/webhooks/courier</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Parser Hardening</strong></td>
+            <td>Fixed <code>K</code> prefix, questions turned into orders, <code>K1 42</code> size/qty ambiguity.</td>
+            <td>Added full-width + Arabic/Persian digit normalization, configurable <code>Merchant.liveCodePrefix</code>, question detection to <code>LiveQuestion</code>, and catalog variant disambiguation.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. Order State Machine &amp; Stock Invariant</h2>
+      <p>Invariant: <code>available = stock - reserved &ge; 0</code> across all concurrent requests via conditional PostgreSQL <code>UPDATE</code>.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>State</th>
+            <th>Allowed Transitions</th>
+            <th>Stock Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>DRAFT</strong></td>
+            <td><code>PENDING_CONFIRMATION</code>, <code>CONFIRMED</code>, <code>NEEDS_INFO</code>, <code>AWAITING_CUSTOMER</code>, <code>CANCELLED</code>, <code>EXPIRED</code></td>
+            <td><code>reserved += qty</code> on create</td>
+          </tr>
+          <tr>
+            <td><strong>PENDING_CONFIRMATION</strong></td>
+            <td><code>CONFIRMED</code>, <code>NEEDS_INFO</code>, <code>AWAITING_CUSTOMER</code>, <code>CANCELLED</code></td>
+            <td>Stays reserved</td>
+          </tr>
+          <tr>
+            <td><strong>CONFIRMED</strong></td>
+            <td><code>SHIPMENT_PENDING</code>, <code>CANCELLED</code></td>
+            <td>Cancel &rarr; <code>reserved -= qty</code></td>
+          </tr>
+          <tr>
+            <td><strong>SHIPMENT_PENDING</strong></td>
+            <td><code>SHIPPED</code>, <code>CONFIRMED</code> (4xx), <code>SHIPMENT_UNKNOWN</code> (timeout/5xx)</td>
+            <td>Shipped &rarr; <code>stock -= qty, reserved -= qty</code></td>
+          </tr>
+          <tr>
+            <td><strong>SHIPMENT_UNKNOWN</strong></td>
+            <td><code>SHIPPED</code> (reconciled), <code>CONFIRMED</code> (404), <code>CANCELLED</code></td>
+            <td>Reconciled shipped &rarr; deduct stock/reserved</td>
+          </tr>
+          <tr>
+            <td><strong>SHIPPED / OUT_FOR_DELIVERY</strong></td>
+            <td><code>DELIVERED</code>, <code>RETURNED</code>, <code>FAILED</code></td>
+            <td>Returned &rarr; <code>stock += qty</code> + rep flagged</td>
+          </tr>
+          <tr>
+            <td><strong>DELIVERED</strong></td>
+            <td><code>CASH_COLLECTED</code>, <code>RETURNED</code></td>
+            <td>Increments <code>BuyerReputation.deliveredCount</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5. Security &amp; Dependency Risks</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Risk Item</th>
+            <th>Mitigation Implemented</th>
+            <th>Follow-Up Plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Unofficial TikTok Connector</strong></td>
+            <td>Wrapped behind <code>LiveConnection</code> interface; supports optional <code>TIKTOK_SIGN_API_KEY</code> &amp; session cookie; labeled best-effort.</td>
+            <td>Track error counters in <code>LiveSession</code>; configure EulerStream sign key for high-traffic lives.</td>
+          </tr>
+          <tr>
+            <td><strong>DzShip Single Proxy</strong></td>
+            <td>Courier HTTP logic isolated in <code>src/lib/couriers/dzship.ts</code>; credentials decrypted only during dispatch/lookup.</td>
+            <td>Implement direct Yalidine &amp; ZR Express adapters behind a shared provider contract.</td>
+          </tr>
+          <tr>
+            <td><strong>Encryption Key Rotation</strong></td>
+            <td>AES-256-GCM bound with AAD (<code>merchantId:courier</code>), <code>v1.</code> format, and <code>CREDENTIALS_KEY_PREV</code> key-ring fallback.</td>
+            <td>Run periodic background re-encryption job when rotating primary key.</td>
+          </tr>
+          <tr>
+            <td><strong>Webhook Integrity</strong></td>
+            <td><code>/api/webhooks/courier</code> checks <code>COURIER_WEBHOOK_SECRET</code> using constant-time <code>timingSafeEqual</code>.</td>
+            <td>Add per-courier HMAC signature validation once direct adapters ship.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>6. Delivery Roadmap</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Phase</th>
+            <th>Deliverables</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Phase 1: Core QR Platform</strong></td>
+            <td>Next.js 16 + Postgres 16 + Prisma 7, <code>/q/{token}</code>, 69 DZ wilayas, Firebase Auth + CSRF, AES-256-GCM courier credentials</td>
+            <td><span class="badge done">Done</span></td>
+          </tr>
+          <tr>
+            <td><strong>Phase 2: Hybrid Live + Worker + COD</strong></td>
+            <td>Parser hardening, <code>tiktok-live-connector</code> v2 adapter, DB-leased worker, <code>/l/{sessionToken}</code> claim flow, <code>SHIPMENT_UNKNOWN</code> &amp; reconciliation, <code>CallLog</code>, <code>BuyerReputation</code>, <code>DeliveryRate</code>, courier webhook sync, Docker multi-service staging</td>
+            <td><span class="badge done">Done</span></td>
+          </tr>
+          <tr>
+            <td><strong>Phase 3: Courier Live Verification &amp; Seller Admin</strong></td>
+            <td>Live parcel smoke test with real Yalidine/ZR credentials, merchant CRUD UI for Products, Cards, and Wilaya Delivery Rates</td>
+            <td><span class="badge next">Next</span></td>
+          </tr>
+          <tr>
+            <td><strong>Phase 4: Direct Couriers &amp; Scale</strong></td>
+            <td>Direct Yalidine &amp; ZR Express adapters, Redis pub/sub live dashboard feed, opt-in cross-store reputation, Phone OTP auth</td>
+            <td><span class="badge plan">Planned</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

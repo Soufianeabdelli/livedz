@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { listCourierAccounts } from "@/lib/courier-accounts";
 import { getMerchantContext } from "@/lib/merchant";
 import { listOrders } from "@/lib/merchant-orders";
 import { getSessionUser } from "@/lib/session";
+import { LiveCapture } from "./live-capture";
 import { LogoutButton } from "./logout-button";
 import { OrdersList } from "./orders-list";
 
@@ -19,18 +21,23 @@ async function Dashboard() {
   if (!user) redirect("/login");
 
   const ctx = await getMerchantContext(user);
-  const orders = await listOrders(ctx.merchantId);
-  const fresh = orders.filter((o) => o.status === "DRAFT").length;
+  const [orders, accounts] = await Promise.all([
+    listOrders(ctx.merchantId),
+    listCourierAccounts(ctx.merchantId),
+  ]);
+  const fresh = orders.filter((o) => o.status === "DRAFT" || o.status === "PENDING_CONFIRMATION").length;
+  const couriers = accounts.length > 0 ? accounts.map((a) => a.courier) : ["sandbox"];
 
   return (
     <main className="mx-auto w-full max-w-md space-y-4 p-6">
       <h1 className="text-2xl font-bold">{ctx.merchantName}</h1>
       <p className="text-sm text-gray-500">{user.email} ({ctx.role})</p>
       <div className="flex items-center justify-between">
-        <p>Nouvelles commandes : <b>{fresh}</b></p>
+        <p>A traiter : <b>{fresh}</b></p>
         <a href="/dashboard" className="text-sm underline">Actualiser</a>
       </div>
-      <OrdersList orders={orders} />
+      <LiveCapture />
+      <OrdersList orders={orders} couriers={couriers} />
       <a href="/dashboard/shipping" className="block rounded border p-3 text-center">Livraison</a>
       <LogoutButton />
     </main>

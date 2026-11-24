@@ -1,13 +1,17 @@
 import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/couriers/dzship", () => ({ createParcel: vi.fn() }));
+vi.mock("@/lib/couriers/dzship", () => ({
+  createParcel: vi.fn(),
+  findParcelByReference: vi.fn(),
+}));
 
-import { createParcel } from "@/lib/couriers/dzship";
+import { createParcel, findParcelByReference } from "@/lib/couriers/dzship";
 import { prisma } from "@/lib/db";
-import { shipOrder } from "@/lib/shipping";
+import { reconcileUnknownShipment, shipOrder } from "@/lib/shipping";
 
 const mocked = vi.mocked(createParcel);
+const mockedLookup = vi.mocked(findParcelByReference);
 const tag = randomBytes(4).toString("hex");
 let a = "", b = "", variantId = "";
 
@@ -36,6 +40,7 @@ beforeAll(async () => {
 });
 beforeEach(async () => {
   mocked.mockReset();
+  mockedLookup.mockReset();
   await prisma.order.deleteMany({ where: { merchantId: { in: [a, b] } } });
   await prisma.variant.update({ where: { id: variantId }, data: { stock: 10, reserved: 2 } });
 });
@@ -54,16 +59,25 @@ describe("shipOrder success", () => {
     expect(row.status).toBe("SHIPPED");
     expect(row.trackingNumber).toBe("DZTEST-1");
     expect(row.courier).toBe("sandbox");
+    expect(row.shipAttempts).toBe(1);
+    expect(row.shipmentAttemptKey).toBe(`${o.id}-a1`);
     expect(await stock()).toEqual({ stock: 8, reserved: 0 });
   });
 
-  it("sends the right data to the courier", async () => {
+  it("sends the right data and idempotency key to the courier", async () => {
     mocked.mockResolvedValue(okParcel);
     const o = await mkOrder(a);
     await shipOrder(a, o.id, "sandbox");
     expect(mocked).toHaveBeenCalledTimes(1);
     const sent = mocked.mock.calls[0][1];
-    expect(sent).toMatchObject({ codAmount: 9000, deliveryType: "home", wilayaCode: 31, communeName: "Oran", reference: o.id });
+    expect(sent).toMatchObject({
+      codAmount: 9000,
+      deliveryType: "home",
+      wilayaCode: 31,
+      communeName: "Oran",
+      reference: o.id,
+      idempotencyKey: `${o.id}-a1`,
+    });
     expect(sent.productList).toContain("Test shoe 42 Black x2");
   });
 
@@ -76,8 +90,9 @@ describe("shipOrder success", () => {
     expect(await stock()).toEqual({ stock: 8, reserved: 0 });
   });
 });
-describe("shipOrder failures", () => {
-  it("courier rejection puts the order back to CONFIRMED and keeps stock", async () => {
+
+describe("shipOrder failures & reconciliation", () => {
+  it("courier 400 rejection puts the order back to CONFIRMED and keeps stock", async () => {
     mocked.mockResolvedValue({ ok: false, error: "invalid_input", fields: ["commune"], detail: "x", status: 400 });
     const o = await mkOrder(a);
     expect(await shipOrder(a, o.id, "sandbox")).toEqual({ ok: false, error: "courier_rejected", fields: ["commune"] });
@@ -87,11 +102,44 @@ describe("shipOrder failures", () => {
     expect(await stock()).toEqual({ stock: 10, reserved: 2 });
   });
 
-  it("a network error is reported as courier_unavailable", async () => {
+  it("moves to SHIPMENT_UNKNOWN on network_error/5xx to prevent duplicate parcels", async () => {
     mocked.mockResolvedValue({ ok: false, error: "network_error", fields: [], detail: "network_error" });
     const o = await mkOrder(a);
-    expect((await shipOrder(a, o.id, "sandbox")).ok).toBe(false);
-    expect((await order(o.id)).status).toBe("CONFIRMED");
+    expect(await shipOrder(a, o.id, "sandbox")).toEqual({ ok: false, error: "shipment_unknown" });
+    const row = await order(o.id);
+    expect(row.status).toBe("SHIPMENT_UNKNOWN");
+    expect(row.courier).toBe("sandbox");
+    // Cannot blindly ship again until reconciled
+    expect(await shipOrder(a, o.id, "sandbox")).toEqual({ ok: false, error: "not_confirmed" });
+  });
+
+  it("reconciles SHIPMENT_UNKNOWN -> SHIPPED when parcel was actually created", async () => {
+    mocked.mockResolvedValue({ ok: false, error: "courier_unavailable", fields: [], detail: "503", status: 503 });
+    const o = await mkOrder(a);
+    await shipOrder(a, o.id, "sandbox");
+
+    mockedLookup.mockResolvedValue({ found: true, trackingNumber: "DZ-RECON-1", status: "created" });
+    expect(await reconcileUnknownShipment(a, o.id)).toEqual({
+      ok: true,
+      resolution: "shipped",
+      trackingNumber: "DZ-RECON-1",
+    });
+    expect((await order(o.id)).status).toBe("SHIPPED");
+    expect(await stock()).toEqual({ stock: 8, reserved: 0 });
+  });
+
+  it("reconciles SHIPMENT_UNKNOWN -> CONFIRMED when courier confirms 404, then retries with a2", async () => {
+    mocked.mockResolvedValue({ ok: false, error: "network_error", fields: [], detail: "timeout" });
+    const o = await mkOrder(a);
+    await shipOrder(a, o.id, "sandbox");
+
+    mockedLookup.mockResolvedValue({ found: false, definiteNotFound: true });
+    expect(await reconcileUnknownShipment(a, o.id)).toEqual({ ok: true, resolution: "released_for_retry" });
+
+    mocked.mockResolvedValue(okParcel);
+    expect(await shipOrder(a, o.id, "sandbox")).toEqual({ ok: true, trackingNumber: "DZTEST-1" });
+    expect(mocked.mock.calls[1][1].idempotencyKey).toBe(`${o.id}-a2`);
+    expect(mocked.mock.calls[1][1].reference).toBe(`${o.id}-a2`);
   });
 
   it("refuses an order that is not confirmed", async () => {

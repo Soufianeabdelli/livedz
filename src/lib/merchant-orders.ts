@@ -1,19 +1,47 @@
 import { prisma } from "@/lib/db";
 import { allowedFrom } from "@/lib/order-status";
+import { getReputationMap, type ReputationSummary } from "@/lib/reputation";
 
 // Every query is scoped by merchantId, which comes from the verified session
-export function listOrders(merchantId: string, take = 50) {
-  return prisma.order.findMany({
+export async function listOrders(merchantId: string, take = 50) {
+  const rows = await prisma.order.findMany({
     where: { merchantId },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take,
     select: {
-      id: true, status: true, createdAt: true, customerName: true, phone: true,
-      wilayaCode: true, commune: true, deliveryType: true, address: true, totalDzd: true,
+      id: true,
+      status: true,
+      source: true,
+      tiktokUsername: true,
+      createdAt: true,
+      customerName: true,
+      phone: true,
+      wilayaCode: true,
+      officialRegionKey: true,
+      commune: true,
+      deliveryType: true,
+      address: true,
+      shippingFeeDzd: true,
+      totalDzd: true,
+      courier: true,
+      trackingNumber: true,
+      callAttempts: true,
+      lastCallOutcome: true,
+      draftExpiresAt: true,
       affiliate: { select: { handle: true } },
       items: { select: { productName: true, quantity: true, variant: { select: { size: true, color: true } } } },
     },
   });
+
+  const repMap = await getReputationMap(
+    merchantId,
+    rows.map((r) => r.phone),
+  );
+
+  return rows.map((r) => ({
+    ...r,
+    reputation: (r.phone ? repMap.get(r.phone) : undefined) as ReputationSummary | undefined,
+  }));
 }
 
 export type ChangeResult = { ok: true } | { ok: false; error: "not_found" | "invalid_transition" };

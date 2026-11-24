@@ -1,0 +1,33 @@
+# Production / staging compose: db + web app + live worker
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    container_name: livedz-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env.local
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-livedz}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-livedz}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      target: worker
+    container_name: livedz-worker
+    restart: unless-stopped
+    env_file: .env.local
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-livedz}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-livedz}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy

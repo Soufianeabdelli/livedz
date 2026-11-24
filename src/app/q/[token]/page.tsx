@@ -24,7 +24,12 @@ async function CardView({ params }: Props) {
   const card = await prisma.card.findUnique({
     where: { token },
     include: {
-      merchant: { select: { name: true } },
+      merchant: {
+        select: {
+          name: true,
+          deliveryRates: { select: { wilayaCode: true, homeDzd: true, stopdeskDzd: true } },
+        },
+      },
       product: { include: { variants: { orderBy: { size: "asc" } } } },
     },
   });
@@ -37,7 +42,6 @@ async function CardView({ params }: Props) {
     available: v.stock - v.reserved > 0,
   }));
 
-  // New key on every page load: a double click sends the same key, so one order only
   const idempotencyKey = randomUUID();
 
   return (
@@ -45,7 +49,12 @@ async function CardView({ params }: Props) {
       <p className="text-sm text-gray-500">{card.merchant.name}</p>
       <h1 className="text-2xl font-bold">#{p.code} {p.name}</h1>
       <p className="text-xl">{fmt.format(p.priceDzd)} DA</p>
-      <OrderForm token={token} idempotencyKey={idempotencyKey} variants={variants} />
+      <OrderForm
+        token={token}
+        idempotencyKey={idempotencyKey}
+        variants={variants}
+        deliveryRates={card.merchant.deliveryRates}
+      />
     </main>
   );
 }

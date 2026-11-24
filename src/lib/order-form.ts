@@ -6,7 +6,7 @@ import { resolveDzRegion } from "@/lib/countries/dz/regions";
 export type OrderFormState =
   | { status: "idle" }
   | { status: "error"; error: string; fields: string[] }
-  | { status: "success"; ref: string; totalDzd: number };
+  | { status: "success"; ref: string; totalDzd: number; shippingFeeDzd?: number };
 
 const str = (fd: FormData, k: string) => {
   const v = fd.get(k);
@@ -29,6 +29,7 @@ export async function processOrderForm(
     customerName: str(fd, "customerName"),
     phone: str(fd, "phone"),
     wilayaCode: region?.courierCode ?? 0,
+    officialRegionKey: region?.key,
     commune: str(fd, "commune"),
     deliveryType: str(fd, "deliveryType"),
     address: str(fd, "address") || undefined,
@@ -37,16 +38,21 @@ export async function processOrderForm(
 
   if (!parsed.success) {
     const fields = [...new Set(parsed.error.issues.map((i) => String(i.path[0] ?? "")))]
-      .map((f) => (f === "wilayaCode" ? "region" : f));
+      .map((f) => (f === "wilayaCode" || f === "officialRegionKey" ? "region" : f));
     return { status: "error", error: "invalid_input", fields };
   }
 
   try {
     const r = await createOrder(parsed.data);
     if (!r.ok) return { status: "error", error: r.error, fields: [] };
-    return { status: "success", ref: r.orderId.slice(-6).toUpperCase(), totalDzd: r.totalDzd };
+    return {
+      status: "success",
+      ref: r.orderId.slice(-6).toUpperCase(),
+      totalDzd: r.totalDzd,
+      shippingFeeDzd: r.shippingFeeDzd,
+    };
   } catch (e) {
-    console.error("[order-form] createOrder failed", e); // details stay on the server
+    console.error("[order-form] createOrder failed", e);
     return { status: "error", error: "server_error", fields: [] };
   }
 }

@@ -15,6 +15,7 @@ export const OrderInput = z
       return p;
     }),
     wilayaCode: z.coerce.number().int().min(1).max(58), // couriers still use 58
+    officialRegionKey: z.string().max(40).optional(),
     commune: z.string().trim().min(2).max(80),
     deliveryType: z.enum(["HOME", "STOPDESK"]),
     address: z.string().trim().max(200).optional(),

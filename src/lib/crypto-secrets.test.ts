@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { decryptSecret, encryptSecret, parseKey } from "./crypto-secrets";
+import { decryptSecret, decryptSecretWithKeys, encryptSecret, parseKey, parseKeyRing } from "./crypto-secrets";
 
 const key = randomBytes(32);
 const secret = JSON.stringify({ apiId: "ID-123", apiToken: "TOKEN-xyz" });
@@ -54,5 +54,13 @@ describe("crypto-secrets", () => {
     expect(() => parseKey("")).toThrow();
     expect(() => parseKey(undefined)).toThrow();
     expect(parseKey(randomBytes(32).toString("base64")).length).toBe(32);
+  });
+
+  it("supports zero-downtime key rotation via parseKeyRing & decryptSecretWithKeys", () => {
+    const oldKey = randomBytes(32);
+    const newKey = randomBytes(32);
+    const oldCipher = encryptSecret(secret, AAD, oldKey);
+    const ring = parseKeyRing(newKey.toString("base64"), oldKey.toString("base64"));
+    expect(decryptSecretWithKeys(oldCipher, AAD, ring)).toBe(secret);
   });
 });

@@ -1,9 +1,10 @@
 import "server-only";
 import { prisma } from "@/lib/db";
-import { decryptSecret, encryptSecret, parseKey } from "@/lib/crypto-secrets";
+import { decryptSecretWithKeys, encryptSecret, parseKey, parseKeyRing } from "@/lib/crypto-secrets";
 import { getCourier } from "@/lib/couriers/registry";
 
 const key = () => parseKey(process.env.CREDENTIALS_KEY);
+const keyRing = () => parseKeyRing(process.env.CREDENTIALS_KEY, process.env.CREDENTIALS_KEY_PREV);
 const aad = (merchantId: string, courier: string) => `${merchantId}:${courier}`;
 const tail = (s: string) => (s.length > 4 ? "****" + s.slice(-4) : "****");
 
@@ -58,6 +59,6 @@ export async function loadCredentials(merchantId: string, courierKey: string) {
     where: { merchantId_courier: { merchantId, courier: courierKey } },
   });
   if (!row) return null;
-  const credentials = JSON.parse(decryptSecret(row.credentialsEnc, aad(merchantId, courierKey), key())) as Record<string, string>;
+  const credentials = JSON.parse(decryptSecretWithKeys(row.credentialsEnc, aad(merchantId, courierKey), keyRing())) as Record<string, string>;
   return { credentials, fromWilaya: row.fromWilaya };
 }

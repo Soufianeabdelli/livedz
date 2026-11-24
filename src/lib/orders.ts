@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
+import { getDeliveryFee } from "@/lib/delivery-rates";
 import type { OrderInput } from "@/lib/order-input";
 
 export type CreateOrderResult =
-  | { ok: true; orderId: string; totalDzd: number; duplicate: boolean }
+  | { ok: true; orderId: string; totalDzd: number; shippingFeeDzd: number; duplicate: boolean }
   | { ok: false; error: "card_not_found" | "variant_not_found" | "out_of_stock" };
 
 class OutOfStock extends Error {}
@@ -32,15 +33,21 @@ export async function createOrder(input: OrderInput): Promise<CreateOrderResult>
           idempotencyKey: input.idempotencyKey,
         },
       },
-      select: { id: true, totalDzd: true },
+      select: { id: true, totalDzd: true, shippingFeeDzd: true },
     });
 
-  const dup = (o: { id: string; totalDzd: number }): CreateOrderResult => ({
-    ok: true, orderId: o.id, totalDzd: o.totalDzd, duplicate: true,
+  const dup = (o: { id: string; totalDzd: number; shippingFeeDzd: number }): CreateOrderResult => ({
+    ok: true,
+    orderId: o.id,
+    totalDzd: o.totalDzd,
+    shippingFeeDzd: o.shippingFeeDzd,
+    duplicate: true,
   });
 
   const existing = await findExisting();
   if (existing) return dup(existing);
+
+  const shippingFeeDzd = await getDeliveryFee(card.merchantId, input.wilayaCode, input.deliveryType);
 
   try {
     const order = await prisma.$transaction(async (tx) => {
@@ -62,9 +69,11 @@ export async function createOrder(input: OrderInput): Promise<CreateOrderResult>
           customerName: input.customerName,
           phone: input.phone,
           wilayaCode: input.wilayaCode,
+          officialRegionKey: input.officialRegionKey ?? String(input.wilayaCode),
           commune: input.commune,
           deliveryType: input.deliveryType,
           address: input.address || null,
+          shippingFeeDzd,
           totalDzd: product.priceDzd * input.quantity, // price from DB, never from the client
           messagingConsent: input.messagingConsent,
           consentAt: input.messagingConsent ? new Date() : null,
@@ -77,10 +86,16 @@ export async function createOrder(input: OrderInput): Promise<CreateOrderResult>
             },
           },
         },
-        select: { id: true, totalDzd: true },
+        select: { id: true, totalDzd: true, shippingFeeDzd: true },
       });
     });
-    return { ok: true, orderId: order.id, totalDzd: order.totalDzd, duplicate: false };
+    return {
+      ok: true,
+      orderId: order.id,
+      totalDzd: order.totalDzd,
+      shippingFeeDzd: order.shippingFeeDzd,
+      duplicate: false,
+    };
   } catch (e) {
     // A parallel request with the same key may have won the race
     const again = await findExisting();
