@@ -3,6 +3,7 @@ import { loadCredentials } from "@/lib/courier-accounts";
 import { createParcel, findParcelByReference } from "@/lib/couriers/dzship";
 import { getCourier } from "@/lib/couriers/registry";
 import { prisma } from "@/lib/db";
+import { commitReserved } from "@/lib/stock-ops";
 
 export type ShipOutcome =
   | { ok: true; trackingNumber: string }
@@ -125,13 +126,7 @@ async function commitShipped(
         where: { id: orderId },
         data: { status: "SHIPPED", trackingNumber },
       });
-      for (const it of items) {
-        await tx.$executeRaw`
-          UPDATE "Variant"
-          SET "stock" = GREATEST("stock" - ${it.quantity}::int, 0),
-              "reserved" = GREATEST("reserved" - ${it.quantity}::int, 0)
-          WHERE "id" = ${it.variantId}`;
-      }
+      await commitReserved(tx, items);
     });
   } catch (e) {
     console.error("[ship] saved at courier but not in db", {

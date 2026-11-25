@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { releaseReserved } from "@/lib/stock-ops";
 import { allowedFrom } from "@/lib/order-status";
 import { getReputationMap, type ReputationSummary } from "@/lib/reputation";
 
@@ -63,9 +64,7 @@ export function changeOrderStatus(
     }
     if (to === "CANCELLED") {
       const items = await tx.orderItem.findMany({ where: { orderId }, select: { variantId: true, quantity: true } });
-      for (const it of items) {
-        await tx.$executeRaw`UPDATE "Variant" SET "reserved" = GREATEST("reserved" - ${it.quantity}::int, 0) WHERE "id" = ${it.variantId}`;
-      }
+      await releaseReserved(tx, items);
     }
     return { ok: true };
   });

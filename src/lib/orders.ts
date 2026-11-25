@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { isStockCheckViolation } from "@/lib/db-errors";
 import { getDeliveryFee } from "@/lib/delivery-rates";
 import type { OrderInput } from "@/lib/order-input";
 
@@ -61,7 +62,7 @@ export async function createOrder(input: OrderInput): Promise<CreateOrderResult>
       return tx.order.create({
         data: {
           merchantId: card.merchantId,
-          status: "DRAFT", // waiting for the merchant to review
+          status: "PENDING_CONFIRMATION", // waiting for the merchant to confirm
           source: "QR_LINK",
           idempotencyKey: input.idempotencyKey,
           cardId: card.id,
@@ -100,7 +101,7 @@ export async function createOrder(input: OrderInput): Promise<CreateOrderResult>
     // A parallel request with the same key may have won the race
     const again = await findExisting();
     if (again) return dup(again);
-    if (e instanceof OutOfStock) return { ok: false, error: "out_of_stock" };
+    if (e instanceof OutOfStock || isStockCheckViolation(e)) return { ok: false, error: "out_of_stock" };
     throw e;
   }
 }

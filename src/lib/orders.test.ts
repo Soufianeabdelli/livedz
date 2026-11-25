@@ -47,7 +47,7 @@ afterAll(async () => {
 });
 
 describe("createOrder", () => {
-  it("saves a draft order, takes the price from the DB, reserves stock", async () => {
+  it("saves a pending confirmation order, takes the price from the DB, reserves stock", async () => {
     const r = await createOrder(input({ quantity: 2 }));
     expect(r.ok).toBe(true);
     if (!r.ok) return;
@@ -56,7 +56,7 @@ describe("createOrder", () => {
     const o = await prisma.order.findUniqueOrThrow({
       where: { id: r.orderId }, include: { items: true },
     });
-    expect(o.status).toBe("DRAFT");
+    expect(o.status).toBe("PENDING_CONFIRMATION");
     expect(o.items[0].unitPriceDzd).toBe(4500);
   });
 

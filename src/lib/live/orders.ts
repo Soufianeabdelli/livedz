@@ -4,6 +4,8 @@
  */
 
 import { prisma } from "@/lib/db";
+import { isStockCheckViolation } from "@/lib/db-errors";
+import { releaseReserved } from "@/lib/stock-ops";
 import { extractProductCode, parseComment } from "./parser";
 import type { LiveOrderResult, ParsedIntent } from "./types";
 
@@ -176,7 +178,7 @@ export async function createLiveOrder(input: CreateLiveOrderInput): Promise<Live
     if (again) {
       return { ok: true, orderId: again.id, productName: product.name, totalDzd: again.totalDzd, duplicate: true };
     }
-    if (e instanceof OutOfStock) return { ok: false, reason: "out_of_stock" };
+    if (e instanceof OutOfStock || isStockCheckViolation(e)) return { ok: false, reason: "out_of_stock" };
     console.error("[live-order] createLiveOrder failed", e);
     return { ok: false, reason: "db_error" };
   }
@@ -228,12 +230,7 @@ export async function expireStaleLiveDrafts(now = new Date()): Promise<number> {
         data: { status: "EXPIRED" },
       });
       if (res.count !== 1) return false;
-      for (const it of o.items) {
-        await tx.$executeRaw`
-          UPDATE "Variant"
-          SET "reserved" = GREATEST("reserved" - ${it.quantity}::int, 0)
-          WHERE "id" = ${it.variantId}`;
-      }
+      await releaseReserved(tx, o.items);
       return true;
     });
     if (didExpire) expired++;
