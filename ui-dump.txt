@@ -1,4 +1,4 @@
-﻿
+
 ===== src\app\q\[token]\actions.ts =====
 "use server";
 
@@ -440,7 +440,7 @@ export function ClaimForm({
           </div>
           {fee !== null && (
             <p className="text-sm text-gray-600">
-              Livraison : <b>{fmt.format(fee)} DA</b> â€” Total estime : <b>{fmt.format(productsTotal + fee)} DA</b>
+              Livraison : <b>{fmt.format(fee)} DA</b> — Total estime : <b>{fmt.format(productsTotal + fee)} DA</b>
             </p>
           )}
           {delivery === "HOME" && (
