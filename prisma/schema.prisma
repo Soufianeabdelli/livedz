@@ -58,6 +58,7 @@ enum CallOutcome {
 }
 
 model Merchant {
+  storeProfile StoreProfile?
   id               String            @id @default(cuid())
   name             String
   slug             String            @unique
@@ -74,6 +75,7 @@ model Merchant {
   liveQuestions    LiveQuestion[]
   deliveryRates    DeliveryRate[]
   buyerReputations BuyerReputation[]
+  callLogs         CallLog[]
 }
 
 model Membership {
@@ -105,6 +107,7 @@ model Product {
 model Variant {
   id         String      @id @default(cuid())
   productId  String
+  sku        String?
   size       String      @default("")
   color      String      @default("")
   stock      Int         @default(0)
@@ -269,6 +272,7 @@ model LiveQuestion {
   merchant       Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   liveSession    LiveSession? @relation(fields: [liveSessionId], references: [id], onDelete: SetNull)
 
+  @@unique([merchantId, msgId])
   @@index([merchantId, createdAt])
 }
 
@@ -307,7 +311,31 @@ model CallLog {
   note       String?
   createdAt  DateTime    @default(now())
   order      Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  merchant   Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 
   @@index([orderId, createdAt])
   @@index([merchantId, createdAt])
 }
+
+model StoreProfile {
+  id          String          @id @default(cuid())
+  merchantId  String          @unique
+  merchant    Merchant        @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  displayName String
+  tagline     String?
+  category    ProfileCategory @default(SELLER)
+  city        String?
+  whatsapp    String?
+  accentColor String          @default("#8B5E3C")
+  logoUrl     String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+enum ProfileCategory {
+  SELLER
+  SERVICE
+  AFFILIATE
+  ECOMMERCE
+}
+

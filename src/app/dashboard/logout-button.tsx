@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function LogoutButton() {
   const [busy, setBusy] = useState(false);
+  const router = useRouter();
 
   async function logout() {
     setBusy(true);
     await fetch("/api/auth/session", { method: "DELETE" });
-    window.location.assign("/login");
+    router.replace("/login");
+    router.refresh();
   }
 
   return (

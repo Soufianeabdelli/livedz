@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { GoogleAuthProvider, inMemoryPersistence, setPersistence, signInWithPopup, signOut } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase-client";
 
 export function LoginButton() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   async function login() {
     setBusy(true);
@@ -23,7 +25,8 @@ export function LoginButton() {
       });
       await signOut(auth); // session now lives only in the httpOnly cookie
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "login_failed");
-      window.location.assign("/dashboard");
+      router.replace("/dashboard");
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "login_failed");
       setBusy(false);

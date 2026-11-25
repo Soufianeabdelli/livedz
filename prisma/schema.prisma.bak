@@ -1,0 +1,313 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  MODERATOR
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING_CONFIRMATION
+  NEEDS_INFO
+  AWAITING_CUSTOMER
+  CONFIRMED
+  SHIPMENT_PENDING
+  SHIPMENT_UNKNOWN
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CASH_COLLECTED
+  RETURNED
+  CANCELLED
+  EXPIRED
+  FAILED
+}
+
+enum OrderSource {
+  QR_LINK
+  MANUAL
+  LIVE_COMMENT
+}
+
+enum DeliveryType {
+  HOME
+  STOPDESK
+}
+
+enum LiveSessionStatus {
+  PENDING
+  RUNNING
+  STOPPING
+  STOPPED
+  ERROR
+}
+
+enum CallOutcome {
+  CONFIRMED
+  NO_ANSWER
+  UNREACHABLE
+  CANCELLED
+  CALLBACK
+}
+
+model Merchant {
+  id               String            @id @default(cuid())
+  name             String
+  slug             String            @unique
+  liveCodePrefix   String            @default("K")
+  draftHoldMinutes Int               @default(120)
+  createdAt        DateTime          @default(now())
+  members          Membership[]
+  products         Product[]
+  affiliates       Affiliate[]
+  cards            Card[]
+  orders           Order[]
+  courierAccounts  CourierAccount[]
+  liveSessions     LiveSession[]
+  liveQuestions    LiveQuestion[]
+  deliveryRates    DeliveryRate[]
+  buyerReputations BuyerReputation[]
+}
+
+model Membership {
+  id         String   @id @default(cuid())
+  userId     String
+  merchantId String
+  role       Role     @default(MODERATOR)
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, merchantId])
+  @@index([merchantId])
+}
+
+model Product {
+  id         String    @id @default(cuid())
+  merchantId String
+  code       String
+  name       String
+  priceDzd   Int
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  merchant   Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  variants   Variant[]
+  cards      Card[]
+
+  @@unique([merchantId, code])
+}
+
+model Variant {
+  id         String      @id @default(cuid())
+  productId  String
+  size       String      @default("")
+  color      String      @default("")
+  stock      Int         @default(0)
+  reserved   Int         @default(0)
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@unique([productId, size, color])
+}
+
+model Affiliate {
+  id            String   @id @default(cuid())
+  merchantId    String
+  handle        String
+  commissionBps Int
+  phoneHmac     String?
+  isActive      Boolean  @default(true)
+  merchant      Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  cards         Card[]
+  orders        Order[]
+
+  @@unique([merchantId, handle])
+}
+
+model Card {
+  id          String     @id @default(cuid())
+  token       String     @unique
+  merchantId  String
+  productId   String?
+  affiliateId String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  merchant    Merchant   @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  product     Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+  affiliate   Affiliate? @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+  orders      Order[]
+
+  @@index([merchantId])
+}
+
+model Order {
+  id                 String        @id @default(cuid())
+  merchantId         String
+  status             OrderStatus   @default(DRAFT)
+  source             OrderSource
+  idempotencyKey     String
+  cardId             String?
+  affiliateId        String?
+  liveSessionId      String?
+  tiktokUsername     String?
+  tiktokMsgId        String?
+  customerName       String?
+  phone              String?
+  wilayaCode         Int?
+  officialRegionKey  String?
+  commune            String?
+  deliveryType       DeliveryType?
+  address            String?
+  shippingFeeDzd     Int           @default(0)
+  totalDzd           Int           @default(0)
+  messagingConsent   Boolean       @default(false)
+  consentAt          DateTime?
+  draftExpiresAt     DateTime?
+  claimedAt          DateTime?
+  courier            String?
+  trackingNumber     String?
+  shipAttempts       Int           @default(0)
+  shipmentAttemptKey String?
+  callAttempts       Int           @default(0)
+  lastCallAt         DateTime?
+  lastCallOutcome    CallOutcome?
+  note               String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  merchant           Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  card               Card?         @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  affiliate          Affiliate?    @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+  liveSession        LiveSession?  @relation(fields: [liveSessionId], references: [id], onDelete: SetNull)
+  items              OrderItem[]
+  callLogs           CallLog[]
+
+  @@unique([merchantId, idempotencyKey])
+  @@index([merchantId, status])
+  @@index([merchantId, createdAt])
+  @@index([merchantId, phone])
+  @@index([merchantId, tiktokUsername, status])
+  @@index([status, draftExpiresAt])
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  variantId    String
+  productName  String
+  quantity     Int     @default(1)
+  unitPriceDzd Int
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant      Variant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+}
+
+model Commune {
+  id         Int    @id @default(autoincrement())
+  wilayaCode Int
+  name       String
+  nameAr     String
+
+  @@unique([wilayaCode, name])
+  @@index([wilayaCode])
+}
+
+model CourierAccount {
+  id             String   @id @default(cuid())
+  merchantId     String
+  courier        String
+  credentialsEnc String
+  hint           String
+  fromWilaya     Int
+  createdAt      DateTime @default(now())
+  merchant       Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, courier])
+}
+
+model LiveSession {
+  id             String            @id @default(cuid())
+  merchantId     String
+  sessionToken   String            @unique
+  tiktokUsername String
+  status         LiveSessionStatus @default(PENDING)
+  roomId         String?
+  workerId       String?
+  leaseExpiresAt DateTime?
+  heartbeatAt    DateTime?
+  commentsSeen   Int               @default(0)
+  ordersCreated  Int               @default(0)
+  questionsSeen  Int               @default(0)
+  errors         Int               @default(0)
+  lastError      String?
+  startedAt      DateTime?
+  stoppedAt      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  merchant       Merchant          @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  orders         Order[]
+  questions      LiveQuestion[]
+
+  @@index([merchantId, status])
+  @@index([status, leaseExpiresAt])
+}
+
+model LiveQuestion {
+  id             String       @id @default(cuid())
+  merchantId     String
+  liveSessionId  String?
+  tiktokUsername String
+  productCode    String?
+  comment        String
+  msgId          String?
+  createdAt      DateTime     @default(now())
+  merchant       Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  liveSession    LiveSession? @relation(fields: [liveSessionId], references: [id], onDelete: SetNull)
+
+  @@index([merchantId, createdAt])
+}
+
+model DeliveryRate {
+  id          String   @id @default(cuid())
+  merchantId  String
+  wilayaCode  Int
+  homeDzd     Int
+  stopdeskDzd Int
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, wilayaCode])
+}
+
+model BuyerReputation {
+  id             String   @id @default(cuid())
+  merchantId     String
+  phone          String
+  deliveredCount Int      @default(0)
+  returnedCount  Int      @default(0)
+  refusedCount   Int      @default(0)
+  blocked        Boolean  @default(false)
+  note           String?
+  updatedAt      DateTime @updatedAt
+  merchant       Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, phone])
+}
+
+model CallLog {
+  id         String      @id @default(cuid())
+  orderId    String
+  merchantId String
+  userId     String?
+  outcome    CallOutcome
+  note       String?
+  createdAt  DateTime    @default(now())
+  order      Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@index([merchantId, createdAt])
+}
