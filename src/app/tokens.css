@@ -1,0 +1,19 @@
+/* Design tokens. Storefront pages override --accent / --accent-ink per store. */
+@theme {
+  --color-surface: #fbfaf8;
+  --color-card: #ffffff;
+  --color-ink: #1c1917;
+  --color-muted: #6b6560;
+  --color-line: #e8e4de;
+  --color-success: #15803d;
+  --color-danger: #b91c1c;
+  --radius-card: 1.25rem;
+  --radius-control: 0.875rem;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.06);
+  --shadow-sheet: 0 -8px 32px rgb(0 0 0 / 0.12);
+}
+
+@theme inline {
+  --color-accent: var(--accent, #8b5e3c);
+  --color-accent-ink: var(--accent-ink, #ffffff);
+}

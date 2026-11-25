@@ -1,0 +1,756 @@
+﻿
+===== src\app\q\[token]\actions.ts =====
+"use server";
+
+import { headers } from "next/headers";
+import { processOrderForm, type OrderFormState } from "@/lib/order-form";
+
+export async function submitOrder(_prev: OrderFormState, fd: FormData): Promise<OrderFormState> {
+  const h = await headers();
+  // DEV: x-forwarded-for can be spoofed. In production read only the proxy/CDN header.
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  return processOrderForm(fd, ip);
+}
+
+===== src\app\q\[token]\messages.ts =====
+export const MSG: Record<string, string> = {
+  rate_limited: "Trop de tentatives. Reessayez dans quelques minutes.",
+  invalid_input: "Verifiez les champs en rouge.",
+  out_of_stock: "Cette pointure n'est plus disponible.",
+  card_not_found: "Ce lien n'est plus actif.",
+  variant_not_found: "Choisissez une pointure.",
+  server_error: "Erreur technique. Reessayez.",
+};
+
+===== src\app\q\[token]\order-form.tsx =====
+"use client";
+
+import { startTransition, useActionState, useMemo, useState, type FormEvent } from "react";
+import { submitOrder } from "./actions";
+import { MSG } from "./messages";
+import { Success } from "./success";
+import { VariantPicker, type V } from "./variant-picker";
+import { DZ_REGIONS, resolveDzRegion } from "@/lib/countries/dz/regions";
+import type { OrderFormState } from "@/lib/order-form";
+
+const INIT: OrderFormState = { status: "idle" };
+const fmt = new Intl.NumberFormat("fr-DZ");
+
+type DeliveryRateInfo = { wilayaCode: number; homeDzd: number; stopdeskDzd: number };
+type Props = {
+  token: string;
+  idempotencyKey: string;
+  variants: V[];
+  deliveryRates?: DeliveryRateInfo[];
+};
+
+export function OrderForm({ token, idempotencyKey, variants, deliveryRates = [] }: Props) {
+  const [state, action, pending] = useActionState(submitOrder, INIT);
+  const [delivery, setDelivery] = useState<"STOPDESK" | "HOME">("STOPDESK");
+  const [regionKey, setRegionKey] = useState("");
+
+  const fee = useMemo(() => {
+    const r = resolveDzRegion(regionKey);
+    if (!r) return null;
+    const rate = deliveryRates.find((d) => d.wilayaCode === r.courierCode);
+    if (!rate) return null;
+    return delivery === "HOME" ? rate.homeDzd : rate.stopdeskDzd;
+  }, [regionKey, delivery, deliveryRates]);
+
+  if (state.status === "success") {
+    return <Success refCode={state.ref} totalDzd={state.totalDzd + (state.shippingFeeDzd ?? 0)} />;
+  }
+
+  const bad = (f: string) => state.status === "error" && state.fields.includes(f);
+  const box = (f: string) => `w-full rounded border p-2 ${bad(f) ? "border-red-500" : "border-gray-400"}`;
+
+  function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    startTransition(() => action(fd));
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-3">
+      <input type="hidden" name="token" value={token} />
+      <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
+      <input type="hidden" name="quantity" value="1" />
+
+      <VariantPicker variants={variants} invalid={bad("variantId")} />
+
+      <input name="customerName" placeholder="Nom complet" autoComplete="name" required className={box("customerName")} />
+      <input name="phone" type="tel" inputMode="tel" placeholder="Telephone (05 50 12 34 56)" autoComplete="tel" required className={box("phone")} />
+
+      <select
+        name="region"
+        required
+        value={regionKey}
+        onChange={(e) => setRegionKey(e.target.value)}
+        className={box("region")}
+      >
+        <option value="" disabled>Wilaya</option>
+        {DZ_REGIONS.map((r) => (
+          <option key={r.key} value={r.key}>{r.name}</option>
+        ))}
+      </select>
+      <input name="commune" placeholder="Commune" required className={box("commune")} />
+
+      <div className="flex gap-4">
+        <label>
+          <input type="radio" name="deliveryType" value="STOPDESK" checked={delivery === "STOPDESK"} onChange={() => setDelivery("STOPDESK")} /> Bureau
+        </label>
+        <label>
+          <input type="radio" name="deliveryType" value="HOME" checked={delivery === "HOME"} onChange={() => setDelivery("HOME")} /> Domicile
+        </label>
+      </div>
+      {fee !== null && (
+        <p className="text-sm text-gray-600">
+          Livraison ({delivery === "HOME" ? "Domicile" : "Bureau"}) : <b>{fmt.format(fee)} DA</b>
+        </p>
+      )}
+      {delivery === "HOME" && (
+        <textarea name="address" placeholder="Adresse complete" required rows={2} className={box("address")} />
+      )}
+
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" name="consent" className="mt-1" />
+        Oui, envoyez-moi des messages WhatsApp sur ma commande.
+      </label>
+
+      {state.status === "error" && (
+        <p role="alert" className="text-red-600">{MSG[state.error] ?? MSG.server_error}</p>
+      )}
+
+      <button type="submit" disabled={pending} className="w-full rounded bg-black p-3 text-white disabled:opacity-50">
+        {pending ? "Envoi..." : "Commander (paiement a la livraison)"}
+      </button>
+    </form>
+  );
+}
+
+===== src\app\q\[token]\page.tsx =====
+import { Suspense } from "react";
+import { randomUUID } from "node:crypto";
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/db";
+import { CARD_TOKEN_RE } from "@/lib/token";
+import { OrderForm } from "./order-form";
+
+type Props = { params: Promise<{ token: string }> };
+
+export default function Page({ params }: Props) {
+  return (
+    <Suspense fallback={<p className="p-6 text-center">Chargement...</p>}>
+      <CardView params={params} />
+    </Suspense>
+  );
+}
+
+const fmt = new Intl.NumberFormat("fr-DZ");
+
+async function CardView({ params }: Props) {
+  const { token } = await params;
+  if (!CARD_TOKEN_RE.test(token)) notFound();
+
+  const card = await prisma.card.findUnique({
+    where: { token },
+    include: {
+      merchant: {
+        select: {
+          name: true,
+          deliveryRates: { select: { wilayaCode: true, homeDzd: true, stopdeskDzd: true } },
+        },
+      },
+      product: { include: { variants: { orderBy: { size: "asc" } } } },
+    },
+  });
+  if (!card?.isActive || !card.product?.isActive) notFound();
+
+  const p = card.product;
+  const variants = p.variants.map((v) => ({
+    id: v.id,
+    label: v.color ? `${v.size} - ${v.color}` : v.size,
+    available: v.stock - v.reserved > 0,
+  }));
+
+  const idempotencyKey = randomUUID();
+
+  return (
+    <main className="mx-auto w-full max-w-md space-y-4 p-6">
+      <p className="text-sm text-gray-500">{card.merchant.name}</p>
+      <h1 className="text-2xl font-bold">#{p.code} {p.name}</h1>
+      <p className="text-xl">{fmt.format(p.priceDzd)} DA</p>
+      <OrderForm
+        token={token}
+        idempotencyKey={idempotencyKey}
+        variants={variants}
+        deliveryRates={card.merchant.deliveryRates}
+      />
+    </main>
+  );
+}
+
+===== src\app\q\[token]\success.tsx =====
+const fmt = new Intl.NumberFormat("fr-DZ");
+
+export function Success({ refCode, totalDzd }: { refCode: string; totalDzd: number }) {
+  return (
+    <div className="space-y-1 rounded border border-green-600 p-4">
+      <p className="text-lg font-bold">Commande recue !</p>
+      <p>Reference : <b>{refCode}</b></p>
+      <p>Total : {fmt.format(totalDzd)} DA (hors frais de livraison)</p>
+      <p className="text-sm text-gray-500">Le vendeur va vous contacter pour confirmer.</p>
+    </div>
+  );
+}
+
+===== src\app\q\[token]\variant-picker.tsx =====
+export type V = { id: string; label: string; available: boolean };
+
+export function VariantPicker({ variants, invalid }: { variants: V[]; invalid: boolean }) {
+  return (
+    <fieldset className={`rounded border p-3 ${invalid ? "border-red-500" : "border-gray-400"}`}>
+      <legend className="px-1 font-medium">Pointure</legend>
+      <div className="flex flex-wrap gap-2">
+        {variants.map((v) => (
+          <label
+            key={v.id}
+            className={`cursor-pointer rounded border px-3 py-2 has-[:checked]:bg-black has-[:checked]:text-white ${v.available ? "" : "line-through opacity-40"}`}
+          >
+            <input type="radio" name="variantId" value={v.id} disabled={!v.available} required className="sr-only" />
+            {v.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+===== src\app\l\[token]\actions.ts =====
+"use server";
+
+import { headers } from "next/headers";
+import {
+  claimLiveOrdersFromForm,
+  findClaimableOrders,
+  lookupClaimSession,
+  type ClaimResult,
+} from "@/lib/live/claim";
+import { orderLimiter } from "@/lib/rate-limit";
+
+export type LookupState = {
+  orders: Array<{
+    id: string;
+    totalDzd: number;
+    items: Array<{ productName: string; quantity: number; variantLabel: string }>;
+  }>;
+  error?: string;
+};
+
+export async function lookupLiveOrders(
+  sessionToken: string,
+  tiktokHandle: string,
+): Promise<LookupState> {
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  if (!orderLimiter(`lookup:${ip}`)) {
+    return { orders: [], error: "Trop de tentatives. Reessayez plus tard." };
+  }
+
+  const session = await lookupClaimSession(sessionToken);
+  if (!session) return { orders: [], error: "Session introuvable." };
+
+  const clean = tiktokHandle.replace(/^@/, "").trim();
+  if (clean.length < 2) return { orders: [], error: "Entrez votre pseudo TikTok." };
+
+  const rows = await findClaimableOrders(session.merchantId, clean);
+  if (rows.length === 0) {
+    return { orders: [], error: "Aucune commande trouvee pour ce pseudo (ou delai expire)." };
+  }
+
+  return {
+    orders: rows.map((r) => ({
+      id: r.id,
+      totalDzd: r.totalDzd,
+      items: r.items.map((it) => ({
+        productName: it.productName,
+        quantity: it.quantity,
+        variantLabel: [it.variant.size, it.variant.color].filter(Boolean).join(" - "),
+      })),
+    })),
+  };
+}
+
+export type ClaimFormState = ClaimResult | { ok: false; error: "idle" } | { ok: false; error: "rate_limited" };
+
+export async function submitLiveClaim(
+  _prev: ClaimFormState,
+  fd: FormData,
+): Promise<ClaimFormState> {
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  if (!orderLimiter(`claim:${ip}`)) {
+    return { ok: false, error: "rate_limited" };
+  }
+  return claimLiveOrdersFromForm(fd);
+}
+
+===== src\app\l\[token]\claim-form.tsx =====
+"use client";
+
+import { startTransition, useActionState, useMemo, useState, useTransition, type FormEvent } from "react";
+import { DZ_REGIONS, resolveDzRegion } from "@/lib/countries/dz/regions";
+import { lookupLiveOrders, submitLiveClaim, type ClaimFormState, type LookupState } from "./actions";
+
+const INIT: ClaimFormState = { ok: false, error: "idle" };
+const fmt = new Intl.NumberFormat("fr-DZ");
+
+type DeliveryRateInfo = { wilayaCode: number; homeDzd: number; stopdeskDzd: number };
+
+const ERR_MSG: Record<string, string> = {
+  rate_limited: "Trop de tentatives. Reessayez dans quelques minutes.",
+  invalid_input: "Verifiez les champs en rouge.",
+  no_pending_orders: "Aucune commande en attente (ou delai expire).",
+  session_not_found: "Ce lien de live n'est plus actif.",
+};
+
+export function ClaimForm({
+  sessionToken,
+  deliveryRates,
+}: {
+  sessionToken: string;
+  deliveryRates: DeliveryRateInfo[];
+}) {
+  const [handle, setHandle] = useState("");
+  const [lookup, setLookup] = useState<LookupState | null>(null);
+  const [lookingUp, startLookup] = useTransition();
+  const [state, action, pending] = useActionState(submitLiveClaim, INIT);
+  const [delivery, setDelivery] = useState<"STOPDESK" | "HOME">("STOPDESK");
+  const [regionKey, setRegionKey] = useState("");
+
+  const fee = useMemo(() => {
+    const r = resolveDzRegion(regionKey);
+    if (!r) return null;
+    const rate = deliveryRates.find((d) => d.wilayaCode === r.courierCode);
+    if (!rate) return null;
+    return delivery === "HOME" ? rate.homeDzd : rate.stopdeskDzd;
+  }, [regionKey, delivery, deliveryRates]);
+
+  const productsTotal = useMemo(
+    () => (lookup?.orders ?? []).reduce((s, o) => s + o.totalDzd, 0),
+    [lookup],
+  );
+
+  if (state.ok) {
+    return (
+      <div className="space-y-2 rounded border border-green-600 p-4">
+        <p className="text-lg font-bold">Commande confirmee !</p>
+        <p>
+          Reference(s) : <b>{state.orderRefs.join(", ")}</b>
+        </p>
+        <p>Produits : {fmt.format(state.productsTotalDzd)} DA</p>
+        {state.shippingFeeDzd > 0 && <p>Livraison : {fmt.format(state.shippingFeeDzd)} DA</p>}
+        <p className="font-semibold">Total : {fmt.format(state.grandTotalDzd)} DA</p>
+        <p className="text-sm text-gray-500">Le vendeur va vous appeler pour confirmer.</p>
+      </div>
+    );
+  }
+
+  const bad = (f: string) =>
+    !state.ok && state.error === "invalid_input" && (state.fields ?? []).includes(f);
+  const box = (f: string) =>
+    `w-full rounded border p-2 ${bad(f) ? "border-red-500" : "border-gray-400"}`;
+
+  function handleSearch(e: FormEvent) {
+    e.preventDefault();
+    startLookup(async () => {
+      const res = await lookupLiveOrders(sessionToken, handle);
+      setLookup(res);
+    });
+  }
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    startTransition(() => action(fd));
+  }
+
+  return (
+    <div className="space-y-4">
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <input
+          value={handle}
+          onChange={(e) => setHandle(e.target.value)}
+          placeholder="Votre pseudo TikTok (@...)"
+          required
+          className="flex-1 rounded border border-gray-400 p-2"
+        />
+        <button
+          type="submit"
+          disabled={lookingUp || !handle.trim()}
+          className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+        >
+          {lookingUp ? "..." : "Rechercher"}
+        </button>
+      </form>
+
+      {lookup?.error && <p className="text-sm text-red-600">{lookup.error}</p>}
+
+      {lookup && lookup.orders.length > 0 && (
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input type="hidden" name="sessionToken" value={sessionToken} />
+          <input type="hidden" name="tiktokHandle" value={handle} />
+
+          <div className="space-y-1 rounded border border-gray-600 p-3 text-sm">
+            <p className="font-semibold">Vos articles reserves ({lookup.orders.length}) :</p>
+            {lookup.orders.map((o) => (
+              <div key={o.id} className="flex justify-between">
+                <span>
+                  {o.items.map((i) => `${i.quantity}x ${i.productName}${i.variantLabel ? ` (${i.variantLabel})` : ""}`).join(", ")}
+                </span>
+                <b>{fmt.format(o.totalDzd)} DA</b>
+              </div>
+            ))}
+          </div>
+
+          <input name="customerName" placeholder="Nom complet" autoComplete="name" required className={box("customerName")} />
+          <input name="phone" type="tel" inputMode="tel" placeholder="Telephone (05 50 12 34 56)" autoComplete="tel" required className={box("phone")} />
+
+          <select
+            name="region"
+            required
+            value={regionKey}
+            onChange={(e) => setRegionKey(e.target.value)}
+            className={box("region")}
+          >
+            <option value="" disabled>Wilaya</option>
+            {DZ_REGIONS.map((r) => (
+              <option key={r.key} value={r.key}>{r.name}</option>
+            ))}
+          </select>
+          <input name="commune" placeholder="Commune" required className={box("commune")} />
+
+          <div className="flex gap-4">
+            <label>
+              <input type="radio" name="deliveryType" value="STOPDESK" checked={delivery === "STOPDESK"} onChange={() => setDelivery("STOPDESK")} /> Bureau
+            </label>
+            <label>
+              <input type="radio" name="deliveryType" value="HOME" checked={delivery === "HOME"} onChange={() => setDelivery("HOME")} /> Domicile
+            </label>
+          </div>
+          {fee !== null && (
+            <p className="text-sm text-gray-600">
+              Livraison : <b>{fmt.format(fee)} DA</b> â€” Total estime : <b>{fmt.format(productsTotal + fee)} DA</b>
+            </p>
+          )}
+          {delivery === "HOME" && (
+            <textarea name="address" placeholder="Adresse complete" required rows={2} className={box("address")} />
+          )}
+
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="consent" className="mt-1" />
+            Oui, envoyez-moi des messages WhatsApp sur ma commande.
+          </label>
+
+          {!state.ok && state.error !== "idle" && (
+            <p role="alert" className="text-red-600">{ERR_MSG[state.error] ?? "Erreur technique."}</p>
+          )}
+
+          <button type="submit" disabled={pending} className="w-full rounded bg-green-700 p-3 text-white disabled:opacity-50">
+            {pending ? "Envoi..." : "Valider mes coordonnees (COD)"}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+===== src\app\l\[token]\page.tsx =====
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
+import { connection } from "next/server";
+import { lookupClaimSession } from "@/lib/live/claim";
+import { CARD_TOKEN_RE } from "@/lib/token";
+import { ClaimForm } from "./claim-form";
+
+type Props = { params: Promise<{ token: string }> };
+
+export default function LiveClaimPage({ params }: Props) {
+  return (
+    <Suspense fallback={<p className="p-6 text-center">Chargement...</p>}>
+      <ClaimView params={params} />
+    </Suspense>
+  );
+}
+
+async function ClaimView({ params }: Props) {
+  await connection();
+  const { token } = await params;
+  if (!CARD_TOKEN_RE.test(token)) notFound();
+
+  const session = await lookupClaimSession(token);
+  if (!session) notFound();
+
+  return (
+    <main className="mx-auto w-full max-w-md space-y-4 p-6">
+      <p className="text-sm text-gray-500">{session.merchant.name}</p>
+      <h1 className="text-2xl font-bold">Finaliser ma commande Live</h1>
+      <p className="text-sm text-gray-500">
+        Live TikTok : <b>@{session.tiktokUsername}</b>
+      </p>
+      <ClaimForm
+        sessionToken={token}
+        deliveryRates={session.merchant.deliveryRates}
+      />
+    </main>
+  );
+}
+
+===== src\app\layout.tsx =====
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Create Next App",
+  description: "Generated by create next app",
+};
+
+export default function RootLayout({ children }: LayoutProps<"/">) {
+  return (
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">{children}</body>
+    </html>
+  );
+}
+
+===== src\app\dashboard\profile\page.tsx =====
+import { Suspense } from "react";
+import { prisma as db } from "@/lib/db";
+import { requireMerchant } from "@/lib/require-merchant";
+import { cookies } from "next/headers";
+import { DICT, DEFAULT_LOCALE, LOCALE_COOKIE, dirFor, isLocale } from "@/lib/i18n";
+import { StoreProfileForm } from "./store-profile-form";
+import { LanguageSwitcher } from "./language-switcher";
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-stone-50" />}>
+      <ProfileContent />
+    </Suspense>
+  );
+}
+
+async function ProfileContent() {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get(LOCALE_COOKIE)?.value;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  const t = DICT[locale];
+
+  const merchantId = await requireMerchant();
+  const profile = await db.storeProfile.findUnique({ where: { merchantId } });
+
+  return (
+    <main dir={dirFor(locale)} lang={locale} className="min-h-screen bg-stone-50 text-stone-900">
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div>
+            <h1 className="font-serif text-4xl text-stone-900">{t.title}</h1>
+            <p className="mt-2 text-stone-600">{t.subtitle}</p>
+          </div>
+          <LanguageSwitcher current={locale} label={t.language} />
+        </div>
+        <div className="mt-10">
+          <StoreProfileForm initial={profile} t={t} />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+===== src\app\dashboard\profile\store-profile-form.tsx =====
+"use client";
+
+import { useActionState } from "react";
+import { saveStoreProfile, type ProfileActionState } from "./actions";
+import type { Dict, ProfileType } from "@/lib/i18n";
+
+type InitialProfile = {
+  displayName: string;
+  tagline: string | null;
+  category: ProfileType;
+  city: string | null;
+  whatsapp: string | null;
+  accentColor: string;
+} | null;
+
+const CATEGORY_VALUES: ProfileType[] = ["SELLER", "SERVICE", "AFFILIATE", "ECOMMERCE"];
+const initialState: ProfileActionState = { ok: false };
+
+const inputClass =
+  "mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-200";
+
+function FieldError({ messages }: { messages?: string[] }) {
+  if (!messages?.length) return null;
+  return <p className="mt-1.5 text-sm text-rose-700">{messages[0]}</p>;
+}
+
+export function StoreProfileForm({ initial, t }: { initial: InitialProfile; t: Dict }) {
+  const [state, formAction, pending] = useActionState(saveStoreProfile, initialState);
+
+  return (
+    <form
+      action={formAction}
+      className="space-y-7 rounded-3xl border border-stone-200 bg-white p-8 shadow-sm"
+    >
+      <div>
+        <label htmlFor="displayName" className="text-sm font-medium text-stone-700">
+          {t.name}
+        </label>
+        <input
+          id="displayName"
+          name="displayName"
+          defaultValue={initial?.displayName ?? ""}
+          className={inputClass}
+          required
+        />
+        <FieldError messages={state.errors?.displayName} />
+      </div>
+
+      <div>
+        <label htmlFor="tagline" className="text-sm font-medium text-stone-700">
+          {t.tagline}
+        </label>
+        <input
+          id="tagline"
+          name="tagline"
+          defaultValue={initial?.tagline ?? ""}
+          placeholder={t.taglinePlaceholder}
+          className={inputClass}
+        />
+        <FieldError messages={state.errors?.tagline} />
+      </div>
+
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div>
+          <label htmlFor="category" className="text-sm font-medium text-stone-700">
+            {t.profileType}
+          </label>
+          <select
+            id="category"
+            name="category"
+            defaultValue={initial?.category ?? "SELLER"}
+            className={inputClass}
+          >
+            {CATEGORY_VALUES.map((value) => (
+              <option key={value} value={value}>
+                {t.types[value]}
+              </option>
+            ))}
+          </select>
+          <FieldError messages={state.errors?.category} />
+        </div>
+
+        <div>
+          <label htmlFor="city" className="text-sm font-medium text-stone-700">
+            {t.city}
+          </label>
+          <input
+            id="city"
+            name="city"
+            defaultValue={initial?.city ?? ""}
+            placeholder="Algiers"
+            className={inputClass}
+          />
+          <FieldError messages={state.errors?.city} />
+        </div>
+      </div>
+
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div>
+          <label htmlFor="whatsapp" className="text-sm font-medium text-stone-700">
+            {t.whatsapp}
+          </label>
+          <input
+            id="whatsapp"
+            name="whatsapp"
+            dir="ltr"
+            inputMode="tel"
+            defaultValue={initial?.whatsapp ?? ""}
+            placeholder="+213 555 123 456"
+            className={inputClass}
+          />
+          <FieldError messages={state.errors?.whatsapp} />
+        </div>
+
+        <div>
+          <label htmlFor="accentColor" className="text-sm font-medium text-stone-700">
+            {t.accentColor}
+          </label>
+          <input
+            id="accentColor"
+            name="accentColor"
+            type="color"
+            defaultValue={initial?.accentColor ?? "#8B5E3C"}
+            className="mt-2 h-12 w-full cursor-pointer rounded-2xl border border-stone-200 bg-stone-50 p-1"
+          />
+          <FieldError messages={state.errors?.accentColor} />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-4 border-t border-stone-100 pt-6">
+        <p className="text-sm text-emerald-700" aria-live="polite">
+          {state.ok ? t.saved : ""}
+        </p>
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-full bg-stone-900 px-7 py-3 text-sm font-medium text-stone-50 transition hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {pending ? t.saving : t.save}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+===== src\proxy.ts =====
+import { NextResponse, type NextRequest } from "next/server";
+import { CARD_TOKEN_RE } from "@/lib/token";
+
+export function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  if (pathname.startsWith("/dashboard")) {
+    // Fast check only. The page still verifies the cookie with Firebase.
+    if (!req.cookies.get("__session")?.value) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Validates tokens for both /q/{token} and /l/{sessionToken}
+  const token = pathname.split("/")[2] ?? "";
+  if (!CARD_TOKEN_RE.test(token)) {
+    return new NextResponse("Not found", {
+      status: 404,
+      headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" },
+    });
+  }
+  return NextResponse.next();
+}
+
+export const config = { matcher: ["/q/:path*", "/l/:path*", "/dashboard/:path*"] };
