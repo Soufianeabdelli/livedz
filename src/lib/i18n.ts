@@ -80,3 +80,63 @@ export function isLocale(value: unknown): value is Locale {
 export function dirFor(locale: Locale): "rtl" | "ltr" {
   return locale === "ar" ? "rtl" : "ltr";
 }
+
+export type OrderFormDict = {
+  customerName: string;
+  phone: string;
+  wilaya: string;
+  commune: string;
+  stopdesk: string;
+  home: string;
+  delivery: string;
+  address: string;
+  addressPlaceholder: string;
+  consent: string;
+  submitting: string;
+  submit: string;
+};
+
+export const ORDER_FORM_DICT: Record<Locale, OrderFormDict> = {
+  en: {
+    customerName: "Full name",
+    phone: "Phone (05 50 12 34 56)",
+    wilaya: "Wilaya",
+    commune: "Commune",
+    stopdesk: "Stopdesk",
+    home: "Home delivery",
+    delivery: "Delivery",
+    address: "Client address",
+    addressPlaceholder: "Full delivery address (street, building, landmark)",
+    consent: "Yes, send me WhatsApp updates about my order.",
+    submitting: "Sending...",
+    submit: "Order now (Cash on delivery)",
+  },
+  fr: {
+    customerName: "Nom complet",
+    phone: "Téléphone (05 50 12 34 56)",
+    wilaya: "Wilaya",
+    commune: "Commune",
+    stopdesk: "Bureau",
+    home: "Domicile",
+    delivery: "Livraison",
+    address: "Adresse du client",
+    addressPlaceholder: "Adresse complète (rue, bâtiment, repère)",
+    consent: "Oui, envoyez-moi des messages WhatsApp sur ma commande.",
+    submitting: "Envoi...",
+    submit: "Commander (paiement à la livraison)",
+  },
+  ar: {
+    customerName: "الاسم الكامل",
+    phone: "رقم الهاتف (05 50 12 34 56)",
+    wilaya: "الولاية",
+    commune: "البلدية",
+    stopdesk: "مكتب التوصيل",
+    home: "التوصيل للمنزل",
+    delivery: "التوصيل",
+    address: "عنوان العميل",
+    addressPlaceholder: "العنوان الكامل (الشارع، العمارة، معلم قريب)",
+    consent: "نعم، أرسلوا لي تحديثات طلبي عبر واتساب.",
+    submitting: "جاري الإرسال...",
+    submit: "تأكيد الطلب (الدفع عند الاستلام)",
+  },
+};

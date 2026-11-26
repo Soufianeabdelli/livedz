@@ -1,19 +1,53 @@
-/* Design tokens. Storefront pages override --accent / --accent-ink per store. */
-@theme {
-  --color-surface: #fbfaf8;
-  --color-card: #ffffff;
-  --color-ink: #1c1917;
-  --color-muted: #6b6560;
-  --color-line: #e8e4de;
+/* PinCasting — Sage Editorial Design Tokens */
+:root {
+  --color-surface: #f5f3ee;
+  --color-card: #fcfbf8;
+  --color-soft: #ece8df;
+  --color-ink: #1f241d;
+  --color-muted: #666c5e;
+  --color-line: #e4dfd4;
   --color-success: #15803d;
   --color-danger: #b91c1c;
-  --radius-card: 1.25rem;
+  --accent: #4f5842;
+  --accent-ink: #fcfbf8;
+  --color-accent: var(--accent, #4f5842);
+  --color-accent-ink: var(--accent-ink, #fcfbf8);
+  --radius-card: 1.5rem;
   --radius-control: 0.875rem;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.06);
-  --shadow-sheet: 0 -8px 32px rgb(0 0 0 / 0.12);
+  --shadow-card: 0 1px 2px rgb(31 36 29 / 0.04), 0 12px 32px rgb(31 36 29 / 0.08);
+  --shadow-sheet: 0 -8px 32px rgb(31 36 29 / 0.12);
+}
+
+@theme {
+  --color-surface: #f5f3ee;
+  --color-card: #fcfbf8;
+  --color-soft: #ece8df;
+  --color-ink: #1f241d;
+  --color-muted: #666c5e;
+  --color-line: #e4dfd4;
+  --color-success: #15803d;
+  --color-danger: #b91c1c;
+  --radius-card: 1.5rem;
+  --radius-control: 0.875rem;
+  --shadow-card: 0 1px 2px rgb(31 36 29 / 0.04), 0 12px 32px rgb(31 36 29 / 0.08);
 }
 
 @theme inline {
-  --color-accent: var(--accent, #8b5e3c);
-  --color-accent-ink: var(--accent-ink, #ffffff);
+  --color-accent: var(--accent, #4f5842);
+  --color-accent-ink: var(--accent-ink, #fcfbf8);
 }
+
+/* Explicit utility fallbacks so colors/surfaces always render cleanly */
+.bg-surface { background-color: var(--color-surface); }
+.bg-card { background-color: var(--color-card); }
+.bg-soft { background-color: var(--color-soft); }
+.bg-soft\/60 { background-color: color-mix(in srgb, var(--color-soft) 60%, transparent); }
+.bg-soft\/40 { background-color: color-mix(in srgb, var(--color-soft) 40%, transparent); }
+.bg-accent { background-color: var(--accent, #4f5842); }
+.text-ink { color: var(--color-ink); }
+.text-muted { color: var(--color-muted); }
+.text-accent { color: var(--accent, #4f5842); }
+.text-accent-ink { color: var(--accent-ink, #fcfbf8); }
+.border-line { border-color: var(--color-line); }
+.border-accent { border-color: var(--accent, #4f5842); }
+.border-danger { border-color: var(--color-danger); }
