@@ -1,11 +1,11 @@
+import { connection } from "next/server";
 import { Suspense, type CSSProperties } from "react";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
-import { readableTextOn } from "@/lib/color";
+import { readableTextOn, safeAccentHex } from "@/lib/color";
 import { prisma } from "@/lib/db";
 import { dedupeByOffer } from "@/lib/offer-dedupe";
-import { isQrAllowedOnPlatform, resolveOverlayPlatform } from "@/lib/overlay-platform";
+import { resolveOverlayPlatform } from "@/lib/overlay-platform";
 import { OverlayCard, type OverlayOffer } from "./overlay-card";
 
 type Props = {
@@ -13,7 +13,11 @@ type Props = {
   searchParams: Promise<{ code?: string; platform?: string; theme?: string; bg?: string }>;
 };
 
-const ALLOWED_ACCENTS = new Set(["#4f5842", "#7a4e2d", "#2f2a26", "#2c4a52"]);
+function getAppOrigin(): string {
+  let origin = process.env.APP_URL?.trim() || "https://pincasting.app";
+  while (origin.endsWith("/")) origin = origin.slice(0, -1);
+  return origin;
+}
 
 export default function OverlayPage({ params, searchParams }: Props) {
   return (
@@ -24,6 +28,7 @@ export default function OverlayPage({ params, searchParams }: Props) {
 }
 
 async function OverlayView({ params, searchParams }: Props) {
+  await connection();
   const { slug } = await params;
   const { code, platform: queryPlatform, theme, bg } = await searchParams;
 
@@ -39,10 +44,6 @@ async function OverlayView({ params, searchParams }: Props) {
     },
   });
   if (!merchant) notFound();
-  if (merchant.overlayHidden) return null;
-
-  const platform = resolveOverlayPlatform(queryPlatform ?? merchant.overlayPlatform);
-  const allowQr = isQrAllowedOnPlatform(platform);
 
   const [profile, rawCards] = await Promise.all([
     prisma.storeProfile.findUnique({
@@ -66,54 +67,50 @@ async function OverlayView({ params, searchParams }: Props) {
 
   const cards = dedupeByOffer(rawCards)
     .filter((c): c is typeof c & { product: NonNullable<typeof c.product> } => c.product !== null)
-    .slice(0, 6);
-  if (cards.length === 0) notFound();
+    .slice(0, 12);
 
-  const hdrs = await headers();
-  const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host") ?? "pincasting.app";
-  const proto = hdrs.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
+  const origin = getAppOrigin();
+  const displayHost = origin.replace("https://", "").replace("http://", "");
 
   const offers: OverlayOffer[] = await Promise.all(
     Array.from(cards, async (c) => {
       const { code: pCode, name: pTitle, priceDzd } = c.product;
-      const qrSvg = allowQr
-        ? await QRCode.toString(`${proto}://${host}/q/${c.token}`, { type: "svg", margin: 1, width: 180 })
-        : null;
+      const qrSvg = await QRCode.toString(`${origin}/q/${c.token}`, {
+        type: "svg",
+        margin: 1,
+        width: 180,
+      });
       return {
+        id: c.id,
         token: c.token,
         code: pCode,
         title: pTitle,
         priceDzd,
         qrSvg,
-        shortLabel: allowQr ? `${host}/go/${merchant.slug}` : null,
+        shortLabel: `${displayHost}/go/${merchant.slug}`,
       };
     }),
   );
 
-  let initialIndex = 0;
-  if (code) {
-    const clean = code.replace(/^#/, "").toLowerCase();
-    const byCode = offers.findIndex((o) => o.code.toLowerCase() === clean);
-    if (byCode >= 0) initialIndex = byCode;
-  } else if (merchant.activeCardId) {
-    const byActive = cards.findIndex((c) => c.id === merchant.activeCardId);
-    if (byActive >= 0) initialIndex = byActive;
-  }
-
-  const rawAccent = profile?.accentColor;
-  const accent = rawAccent && ALLOWED_ACCENTS.has(rawAccent.toLowerCase()) ? rawAccent : "#4F5842";
+  const accent = safeAccentHex(profile?.accentColor);
   const style = { "--accent": accent, "--accent-ink": readableTextOn(accent) } as CSSProperties;
   const { name: fallbackMerchant } = merchant;
 
   return (
     <div style={style}>
       <OverlayCard
+        slug={merchant.slug}
         merchantName={profile?.displayName?.trim() || fallbackMerchant}
         offers={offers}
-        initialIndex={initialIndex}
-        platform={platform}
+        initialState={{
+          activeCardId: merchant.activeCardId,
+          overlayHidden: merchant.overlayHidden,
+          platform: resolveOverlayPlatform(merchant.overlayPlatform),
+        }}
+        platformOverride={queryPlatform ? resolveOverlayPlatform(queryPlatform) : undefined}
+        codeOverride={code}
         theme={theme === "light" ? "light" : "dark"}
-        transparent={bg === "transparent"}
+        previewBg={bg === "preview"}
       />
     </div>
   );

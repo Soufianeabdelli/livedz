@@ -28,3 +28,18 @@ export function readableTextOn(background: string): "#111111" | "#ffffff" {
     ? "#ffffff"
     : "#111111";
 }
+
+export const DEFAULT_ACCENT = "#4F5842";
+
+export const ACCENT_PRESETS = [
+  { hex: "#4F5842", label: "Sage Editorial" },
+  { hex: "#7A4E2D", label: "Warm Clay" },
+  { hex: "#2F2A26", label: "Espresso" },
+  { hex: "#2C4A52", label: "Mediterranean Slate" },
+] as const;
+
+const ALLOWED_ACCENTS = new Set<string>(Array.from(ACCENT_PRESETS, (p) => p.hex.toLowerCase()));
+
+export function safeAccentHex(hex?: string | null): string {
+  return hex && ALLOWED_ACCENTS.has(hex.toLowerCase()) ? hex : DEFAULT_ACCENT;
+}

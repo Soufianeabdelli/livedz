@@ -15,7 +15,7 @@
     "worker:live": "tsx src/worker/live-worker.ts",
     "db:migrate": "prisma migrate dev && prisma generate",
     "postinstall": "prisma generate",
-    "check": "eslint . && tsc --noEmit && vitest run && next build"
+    "check": "eslint . && next typegen && tsc --noEmit && vitest run && next build"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

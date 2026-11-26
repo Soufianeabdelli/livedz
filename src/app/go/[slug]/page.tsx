@@ -1,14 +1,14 @@
+import { connection } from "next/server";
 import { Suspense, type CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { readableTextOn } from "@/lib/color";
+import { readableTextOn, safeAccentHex } from "@/lib/color";
 import { prisma } from "@/lib/db";
 import { dedupeByOffer } from "@/lib/offer-dedupe";
 
 type Props = { params: Promise<{ slug: string }> };
 
 const fmt = new Intl.NumberFormat("fr-DZ");
-const ALLOWED_ACCENTS = new Set(["#4f5842", "#7a4e2d", "#2f2a26", "#2c4a52"]);
 
 export default function BioLinkPage({ params }: Props) {
   return (
@@ -25,6 +25,7 @@ export default function BioLinkPage({ params }: Props) {
 }
 
 async function NowShowingView({ params }: Props) {
+  await connection();
   const { slug } = await params;
 
   const merchant = await prisma.merchant.findUnique({
@@ -73,7 +74,18 @@ async function NowShowingView({ params }: Props) {
   const cards = dedupeByOffer(rawCards).filter(
     (c): c is typeof c & { product: NonNullable<typeof c.product> } => c.product !== null,
   );
-  if (cards.length === 0) notFound();
+  if (cards.length === 0) {
+    const { name: fallbackEmpty } = merchant;
+    const emptyStore = profile?.displayName?.trim() || fallbackEmpty;
+    return (
+      <div className="min-h-screen bg-surface px-4 py-12 flex items-center justify-center text-ink">
+        <div className="w-full max-w-md rounded-[var(--radius-card)] border border-line bg-card p-8 text-center shadow-sm space-y-2">
+          <h1 className="font-serif text-2xl font-semibold">{emptyStore}</h1>
+          <p className="text-sm text-muted">No active offers right now. Check back during the next live!</p>
+        </div>
+      </div>
+    );
+  }
 
   const activeIdx = merchant.activeCardId
     ? Math.max(0, cards.findIndex((c) => c.id === merchant.activeCardId))
@@ -84,13 +96,11 @@ async function NowShowingView({ params }: Props) {
   const isLive = merchant.liveSessions.length > 0;
   const { name: fallbackMerchant } = merchant;
   const storeName = profile?.displayName?.trim() || fallbackMerchant;
-  const rawAccent = profile?.accentColor;
-  const accent = rawAccent && ALLOWED_ACCENTS.has(rawAccent.toLowerCase()) ? rawAccent : "#4F5842";
+  const accent = safeAccentHex(profile?.accentColor);
   const style = { "--accent": accent, "--accent-ink": readableTextOn(accent) } as CSSProperties;
 
   const { code: featCode, name: featTitle, priceDzd: featPrice, variants: featVariants } = featured.product;
-  let featAvailable = 0;
-  for (const v of featVariants) featAvailable += Math.max(0, v.stock - v.reserved);
+  const featAvailable = featVariants.reduce((sum, v) => sum + Math.max(0, v.stock - v.reserved), 0);
 
   return (
     <div style={style} className="min-h-screen bg-surface px-4 py-6 sm:py-10 text-ink">
@@ -122,7 +132,7 @@ async function NowShowingView({ params }: Props) {
                 #{featCode}
               </span>
               <span className="rounded-full bg-card/90 px-3 py-1 text-xs font-semibold text-accent">
-                {featAvailable > 0 ? `${featAvailable} left` : "Sold out"}
+                {featAvailable === 0 ? "Sold out" : featAvailable <= 5 ? `Only ${featAvailable} left` : "In stock"}
               </span>
             </div>
             <div className="my-auto text-center px-3">

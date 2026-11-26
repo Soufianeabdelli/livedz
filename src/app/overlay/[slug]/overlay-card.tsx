@@ -1,55 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { isQrAllowedOnPlatform, type OverlayPlatform } from "@/lib/overlay-platform";
+import type { OverlayStateSnapshot } from "@/lib/overlay-state";
 
 export type OverlayOffer = {
+  id: string;
   token: string;
   code: string;
   title: string;
   priceDzd: number;
-  qrSvg: string | null;
-  shortLabel: string | null;
+  qrSvg: string;
+  shortLabel: string;
 };
 
 const fmt = new Intl.NumberFormat("fr-DZ");
+const POLL_MS = 2000;
 
 export function OverlayCard({
+  slug,
   merchantName,
   offers,
-  initialIndex = 0,
-  platform = "tiktok",
+  initialState,
+  platformOverride,
+  codeOverride,
   theme = "dark",
-  transparent = false,
+  previewBg = false,
 }: {
+  slug: string;
   merchantName: string;
   offers: OverlayOffer[];
-  initialIndex?: number;
-  platform?: OverlayPlatform;
+  initialState: OverlayStateSnapshot;
+  platformOverride?: OverlayPlatform;
+  codeOverride?: string;
   theme?: "dark" | "light";
-  transparent?: boolean;
+  previewBg?: boolean;
 }) {
-  const [idx, setIdx] = useState(initialIndex);
-  const [minimized, setMinimized] = useState(false);
+  const [live, setLive] = useState<OverlayStateSnapshot>(initialState);
 
-  const active = offers[idx] ?? offers[0];
-  if (!active) return null;
+  useEffect(() => {
+    let mounted = true;
+    const url = `/api/overlay/${encodeURIComponent(slug)}/state`;
+
+    const timer = setInterval(() => {
+      fetch(url, { cache: "no-store" })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((next: OverlayStateSnapshot | null) => {
+          if (mounted && next) setLive(next);
+        })
+        .catch(() => {
+          // Keep showing the last valid card on transient network failures
+        });
+    }, POLL_MS);
+
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [slug]);
+
+  const effectivePlatform = platformOverride ?? live.platform;
+  const allowQr = isQrAllowedOnPlatform(effectivePlatform);
+
+  let active = offers[0] ?? null;
+  if (codeOverride) {
+    const clean = codeOverride.replace(/^#/, "").toLowerCase();
+    const byCode = offers.find((o) => o.code.toLowerCase() === clean);
+    if (byCode) active = byCode;
+  } else if (live.activeCardId) {
+    const byId = offers.find((o) => o.id === live.activeCardId);
+    if (byId) active = byId;
+  }
 
   const isDark = theme === "dark";
-  const allowQr = isQrAllowedOnPlatform(platform) && Boolean(active.qrSvg);
 
   return (
-    <div className={`min-h-screen p-5 flex items-start justify-end ${transparent ? "bg-transparent" : "bg-surface"}`}>
-      <div className="flex flex-col items-end gap-2">
-        <button
-          type="button"
-          onClick={() => setMinimized((m) => !m)}
-          className="rounded-full border border-white/20 bg-black/65 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-md transition hover:bg-black/80"
-        >
-          {minimized ? `Show #${active.code}` : "Hide"}
-        </button>
-
-        {!minimized && (
+    <>
+      {!previewBg && (
+        <style>{"html, body { background: transparent !important; background-color: transparent !important; }"}</style>
+      )}
+      <div className={`min-h-screen p-5 flex items-start justify-end ${previewBg ? "bg-surface" : "bg-transparent"}`}>
+        {!live.overlayHidden && active && (
           <div
             className={`${allowQr ? "w-[215px]" : "w-[196px]"} rounded-3xl p-4 text-center shadow-2xl backdrop-blur-md border ${
               isDark
@@ -61,7 +92,7 @@ export function OverlayCard({
               {merchantName}
             </div>
 
-            {allowQr && active.qrSvg && (
+            {allowQr && (
               <div className="mt-2 inline-block rounded-2xl bg-white p-2 shadow-sm">
                 <div
                   className="h-[144px] w-[144px] [&>svg]:h-full [&>svg]:w-full"
@@ -70,39 +101,20 @@ export function OverlayCard({
               </div>
             )}
 
-            <div className="mt-2.5 font-mono text-sm font-bold tracking-wide uppercase">
+            <div className="mt-2 font-mono text-sm font-bold tracking-wide uppercase">
               #{active.code}
             </div>
             <div className="mt-0.5 truncate text-xs font-medium opacity-90">{active.title}</div>
             <div className="mt-1 text-lg font-bold">{fmt.format(active.priceDzd)} DA</div>
 
-            {allowQr && active.shortLabel && (
+            {allowQr && (
               <div className="mt-2 inline-block rounded-full bg-card px-3 py-1 text-[11px] font-bold text-ink">
                 {active.shortLabel}
-              </div>
-            )}
-
-            {offers.length > 1 && (
-              <div className="mt-3 flex items-center justify-center gap-1.5 pt-2 border-t border-current/15">
-                {Array.from(offers, (o, i) => (
-                  <button
-                    key={o.token}
-                    type="button"
-                    onClick={() => setIdx(i)}
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition ${
-                      i === idx
-                        ? "bg-accent text-accent-ink"
-                        : "bg-current/10 opacity-75 hover:opacity-100"
-                    }`}
-                  >
-                    #{o.code}
-                  </button>
-                ))}
               </div>
             )}
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }
