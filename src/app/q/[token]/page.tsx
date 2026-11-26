@@ -1,9 +1,12 @@
 import { Suspense, type CSSProperties } from "react";
 import { randomUUID } from "node:crypto";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { readableTextOn } from "@/lib/color";
 import { prisma } from "@/lib/db";
+import { LOCALE_COOKIE } from "@/lib/i18n";
+import { resolveLocale } from "@/lib/locale-cookie";
 import { CARD_TOKEN_RE } from "@/lib/token";
 import { OrderForm } from "./order-form";
 
@@ -61,19 +64,16 @@ async function CardView({ params }: Props) {
   const { name: productTitle, code: productCode, priceDzd, variants: rawVariants } = card.product;
   const { name: merchantFallback, slug: merchantSlug, deliveryRates } = card.merchant;
 
-  let totalAvailable = 0;
-  const variants = Array.from(rawVariants, (v) => {
-    const avail = Math.max(0, v.stock - v.reserved);
-    totalAvailable += avail;
-    return {
-      id: v.id,
-      label: v.color ? `${v.size} - ${v.color}` : v.size,
-      available: avail > 0,
-    };
-  });
+  const totalAvailable = rawVariants.reduce((sum, v) => sum + Math.max(0, v.stock - v.reserved), 0);
+  const variants = Array.from(rawVariants, (v) => ({
+    id: v.id,
+    label: v.color ? `${v.size} - ${v.color}` : v.size,
+    available: v.stock - v.reserved > 0,
+  }));
 
   const storeName = profile?.displayName?.trim() || merchantFallback;
   const categoryLabel = profile?.category ?? "PRODUCT";
+  const initialLocale = resolveLocale((await cookies()).get(LOCALE_COOKIE)?.value);
   const idempotencyKey = randomUUID();
 
   return (
@@ -187,6 +187,7 @@ async function CardView({ params }: Props) {
                   variants={variants}
                   deliveryRates={deliveryRates}
                   priceDzd={priceDzd}
+                  initialLocale={initialLocale}
                 />
               </div>
             </div>

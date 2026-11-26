@@ -1,12 +1,13 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useMemo, useState, type FormEvent } from "react";
+import { startTransition, useActionState, useMemo, useState, type FormEvent } from "react";
 import { submitOrder } from "./actions";
 import { MSG } from "./messages";
 import { Success } from "./success";
 import { VariantPicker, type V } from "./variant-picker";
 import { DZ_REGIONS, resolveDzRegion } from "@/lib/countries/dz/regions";
-import { DEFAULT_LOCALE, LOCALES, LOCALE_COOKIE, ORDER_FORM_DICT, type Locale } from "@/lib/i18n";
+import { DEFAULT_LOCALE, LOCALES, ORDER_FORM_DICT, type Locale } from "@/lib/i18n";
+import { writeLocaleCookie } from "@/lib/locale-cookie";
 import type { OrderFormState } from "@/lib/order-form";
 
 const INIT: OrderFormState = { status: "idle" };
@@ -29,13 +30,6 @@ type Props = {
   initialLocale?: Locale;
 };
 
-function readLocaleCookie(): Locale | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${LOCALE_COOKIE}=([^;]+)`));
-  const val = match?.[1] as Locale | undefined;
-  return val && LOCALES.includes(val) ? val : null;
-}
-
 export function OrderForm({
   token,
   idempotencyKey,
@@ -50,14 +44,10 @@ export function OrderForm({
   const [delivery, setDelivery] = useState<"STOPDESK" | "HOME">("STOPDESK");
   const [regionKey, setRegionKey] = useState("");
 
-  useEffect(() => {
-    const saved = readLocaleCookie();
-    if (saved) setLocale(saved);
-  }, []);
 
   function switchLocale(next: Locale) {
     setLocale(next);
-    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; SameSite=Lax`;
+    writeLocaleCookie(next);
   }
 
   const t = ORDER_FORM_DICT[locale];
