@@ -1,29 +1,22 @@
 @import "tailwindcss";
 @import "./tokens.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), var(--font-cairo), system-ui, sans-serif;
+  --font-serif: var(--font-playfair), var(--font-cairo), Georgia, serif;
 }
 
-
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-select option { color: #111; background: #fff; }
 body {
   background-color: var(--color-surface);
   color: var(--color-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+[dir="rtl"] {
+  font-family: var(--font-cairo), var(--font-inter), system-ui, sans-serif;
+}
+
+select option {
+  color: #1f241d;
+  background: #fcfbf8;
 }

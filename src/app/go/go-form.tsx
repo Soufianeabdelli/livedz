@@ -45,18 +45,22 @@ function readCookieLocale(): Locale | null {
   return v && LOCALES.includes(v) ? v : null;
 }
 
+function writeLocaleCookie(next: Locale) {
+  document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; SameSite=Lax`;
+}
 export function GoForm({ initialCode = "" }: { initialCode?: string }) {
   const [state, action, pending] = useActionState(lookupCode, INIT);
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
 
   useEffect(() => {
     const saved = readCookieLocale();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved) setLocale(saved);
   }, []);
 
   function switchLocale(next: Locale) {
     setLocale(next);
-    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; SameSite=Lax`;
+    writeLocaleCookie(next);
   }
 
   const t = COPY[locale];

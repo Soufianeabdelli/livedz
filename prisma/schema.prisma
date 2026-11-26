@@ -64,6 +64,9 @@ model Merchant {
   slug             String            @unique
   liveCodePrefix   String            @default("K")
   draftHoldMinutes Int               @default(120)
+  activeCardId     String?
+  overlayPlatform  String          @default("tiktok")
+  overlayHidden    Boolean         @default(false)
   createdAt        DateTime          @default(now())
   members          Membership[]
   products         Product[]

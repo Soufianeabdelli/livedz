@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { dedupeByOffer } from "@/lib/offer-dedupe";
 import { normalizeDigits } from "@/lib/store-profile";
 
 export type GoState =
@@ -37,26 +38,49 @@ export async function lookupCode(_prev: GoState, fd: FormData): Promise<GoState>
       ...(slugFilter ? { merchant: { slug: { equals: slugFilter, mode: "insensitive" } } } : {}),
       product: { isActive: true, code: { equals: cleanCode, mode: "insensitive" } },
     },
-    take: 6,
+    take: 20,
     orderBy: { createdAt: "desc" },
     select: {
       token: true,
+      merchantId: true,
+      productId: true,
+      affiliateId: true,
       merchant: { select: { name: true } },
       product: { select: { code: true, name: true } },
     },
   });
 
-  if (cards.length === 1) redirect(`/q/${cards[0].token}`);
-  if (cards.length > 1) {
-    return {
-      status: "multiple",
-      matches: cards.filter((c): c is typeof c & { product: NonNullable<typeof c.product> } => c.product !== null).map((c) => ({
+  const unique = dedupeByOffer(cards).filter(
+    (c): c is typeof c & { product: NonNullable<typeof c.product> } => c.product !== null,
+  );
+
+  if (unique.length === 1) redirect(`/q/${unique[0].token}`);
+
+  if (unique.length > 1) {
+    const merchantIds: string[] = [];
+    for (const c of unique) merchantIds.push(c.merchantId);
+
+    const profiles = await prisma.storeProfile.findMany({
+      where: { merchantId: { in: merchantIds } },
+      select: { merchantId: true, displayName: true },
+    });
+
+    const displayMap = new Map<string, string>();
+    for (const p of profiles) displayMap.set(p.merchantId, p.displayName.trim());
+
+    const matches = [];
+    for (const c of unique.slice(0, 6)) {
+      const { name: fallbackName } = c.merchant;
+      const { name: productTitle, code } = c.product;
+      matches.push({
         token: c.token,
-        merchantName: c.merchant.name,
-        productName: c.product.name,
-        code: c.product.code,
-      })),
-    };
+        merchantName: displayMap.get(c.merchantId) || fallbackName,
+        productName: productTitle,
+        code,
+      });
+    }
+
+    return { status: "multiple", matches };
   }
 
   return { status: "not_found", query: raw };
