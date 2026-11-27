@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { GlassButton, GlassCard, GlassInput, GlassSelect, Sheet } from "@/components/ui/glass";
+import { WILAYAS_69 } from "@/lib/countries/dz/regions-2026";
+import type { CommuneRow } from "@/lib/countries/dz/communes";
+import { listCommunes } from "./actions";
 
 const PRODUCTS = [
   { id: "01", label: "#01 Strap", title: "Leather watch strap", price: 3200 },
@@ -13,6 +16,24 @@ const fmt = new Intl.NumberFormat("fr-DZ");
 export function CustomerPreview() {
   const [pid, setPid] = useState("01");
   const [delivery, setDelivery] = useState<"HOME" | "STOPDESK">("HOME");
+  const [regionKey, setRegionKey] = useState("");
+  const [communes, setCommunes] = useState<CommuneRow[]>([]);
+  const [commune, setCommune] = useState("");
+  const [loading, startLoad] = useTransition();
+  const latest = useRef("");
+
+  function onRegion(key: string) {
+    setRegionKey(key);
+    setCommunes([]);
+    setCommune("");
+    latest.current = key;
+    startLoad(async () => {
+      const rows = await listCommunes(key);
+      if (latest.current !== key) return;
+      setCommunes(rows);
+      setCommune(rows[0]?.name ?? "");
+    });
+  }
   const product = PRODUCTS.find((p) => p.id === pid) ?? PRODUCTS[0];
   const fee = delivery === "HOME" ? 600 : 400;
 
@@ -64,13 +85,17 @@ export function CustomerPreview() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
-              <GlassSelect label="Wilaya" name="wilaya" defaultValue="16">
-                <option value="16">16 - Alger</option>
-                <option value="31">31 - Oran</option>
+              <GlassSelect label="Wilaya" name="wilaya" value={regionKey} onChange={(e) => onRegion(e.target.value)}>
+                <option value="" disabled>Choose wilaya</option>
+                {WILAYAS_69.map((w) => (
+                  <option key={w.key} value={w.key}>{w.code} - {w.name} - {w.nameAr}</option>
+                ))}
               </GlassSelect>
-              <GlassSelect label="Commune" name="commune" defaultValue="Alger Centre">
-                <option>Alger Centre</option>
-                <option>Ain Benian</option>
+              <GlassSelect label="Commune" name="commune" value={commune} onChange={(e) => setCommune(e.target.value)} disabled={!regionKey || loading}>
+                <option value="" disabled>{loading ? "Loading..." : "Choose commune"}</option>
+                {communes.map((c) => (
+                  <option key={c.name} value={c.name}>{c.name} - {c.nameAr}</option>
+                ))}
               </GlassSelect>
             </div>
 
