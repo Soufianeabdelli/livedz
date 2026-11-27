@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cairo, Inter, Playfair_Display } from "next/font/google";
+import { Cairo, Inter, Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -11,6 +11,12 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
 });
 
 const cairo = Cairo({
@@ -28,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${playfair.variable} ${cairo.variable} h-full antialiased`}
+      className={`${inter.variable} ${playfair.variable} ${cairo.variable} ${jakarta.variable} h-full antialiased`}
     >
       <body className="min-h-full w-full overflow-x-hidden flex flex-col bg-surface text-ink font-sans">
         {children}

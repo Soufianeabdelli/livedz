@@ -1,38 +1,93 @@
-/* PinCasting Glass theme (opt-in): <div data-theme="glass"> */
+/* PinCasting Glass theme: values from the approved HTML design */
 [data-theme="glass"] {
   --color-surface: #041b14;
   --color-card: #0a2b21;
   --color-soft: #0f3a2d;
   --color-ink: #f2fbf7;
-  --color-muted: #a3c9bb;
-  --color-line: #1d4a3b;
-  --color-success: #34d399;
+  --color-muted: #a7d4c4;
+  --color-line: rgb(255 255 255 / 0.12);
+  --color-success: #1ce39f;
   --color-danger: #f43f5e;
   --accent: #1ce39f;
   --accent-ink: #032217;
   --color-accent: #1ce39f;
   --color-accent-ink: #032217;
-  --shadow-card: 0 10px 28px rgb(0 0 0 / 0.28);
-  --shadow-sheet: 0 -10px 32px rgb(0 0 0 / 0.4);
-  color: var(--color-ink);
+  color: #f2fbf7;
+  font-family: var(--font-cairo), var(--font-jakarta), system-ui, sans-serif;
 }
-
-/* Flat gradient background: cheap to paint on weak phones */
-[data-theme="glass"].glass-bg {
+[data-theme="glass"].g-bg {
+  background-color: #041b14;
   background:
-    radial-gradient(circle at 12% 8%, rgb(28 227 159 / 0.14), transparent 40%),
-    linear-gradient(160deg, #062c21 0%, #041b14 50%, #03130e 100%);
-  background-color: var(--color-surface);
+    radial-gradient(circle at 12% 10%, rgba(28, 227, 159, 0.16), transparent 40%),
+    radial-gradient(circle at 86% 82%, rgba(22, 163, 118, 0.22), transparent 45%),
+    linear-gradient(145deg, #062c21 0%, #041b14 48%, #03130e 100%);
 }
-
-/* Blur is used ONLY on header and bottom bars */
-[data-theme="glass"] .glass-blur {
-  background-color: color-mix(in srgb, var(--color-card) 92%, transparent);
+[data-theme="glass"] .g-num {
+  font-family: var(--font-jakarta), var(--font-cairo), sans-serif;
+  font-variant-numeric: tabular-nums;
 }
-@supports (backdrop-filter: blur(1px)) {
-  [data-theme="glass"] .glass-blur {
-    background-color: color-mix(in srgb, var(--color-card) 70%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-  }
+[data-theme="glass"] .g-panel {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.085) 0%, rgba(16, 66, 51, 0.36) 100%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+[data-theme="glass"] .g-card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(12, 54, 41, 0.32) 100%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 22px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+[data-theme="glass"] .g-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f4fbf8;
+  transition: all 0.2s ease;
+}
+[data-theme="glass"] .g-input::placeholder { color: rgba(209, 250, 229, 0.4); }
+[data-theme="glass"] .g-input:focus {
+  outline: none;
+  border-color: rgba(28, 227, 159, 0.75);
+  background: rgba(28, 227, 159, 0.08);
+  box-shadow: 0 0 0 3px rgba(28, 227, 159, 0.16);
+}
+[data-theme="glass"] .g-input option { background-color: #07261d; color: #f2fbf7; }
+[data-theme="glass"] .g-btn {
+  background: linear-gradient(135deg, #22e6a3 0%, #16c784 100%);
+  color: #032217;
+  box-shadow: 0 10px 26px rgba(28, 227, 159, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+[data-theme="glass"] .g-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+[data-theme="glass"] .g-btn:active { transform: translateY(0) scale(0.99); }
+[data-theme="glass"] .g-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+[data-theme="glass"] .g-badge {
+  background: linear-gradient(135deg, #9bf7d6 0%, #52ebb4 100%);
+  color: #053223;
+  font-weight: 800;
+}
+[data-theme="glass"] .g-fab {
+  background: radial-gradient(circle at 30% 30%, #6df8c7 0%, #1ce39f 55%, #12b87d 100%);
+  box-shadow: 0 0 28px rgba(28, 227, 159, 0.65), 0 8px 20px rgba(0, 0, 0, 0.45);
+  color: #032217;
+}
+[data-theme="glass"] .g-seg {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f2fbf7;
+}
+[data-theme="glass"] .g-seg[aria-checked="true"] {
+  background: linear-gradient(135deg, #22e6a3 0%, #16c784 100%);
+  border-color: #6df8c7;
+  color: #032217;
+}
+[data-theme="glass"] .g-sheet {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.085) 0%, rgba(16, 66, 51, 0.5) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.4);
 }
