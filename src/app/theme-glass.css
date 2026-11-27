@@ -1,0 +1,38 @@
+/* PinCasting Glass theme (opt-in): <div data-theme="glass"> */
+[data-theme="glass"] {
+  --color-surface: #041b14;
+  --color-card: #0a2b21;
+  --color-soft: #0f3a2d;
+  --color-ink: #f2fbf7;
+  --color-muted: #a3c9bb;
+  --color-line: #1d4a3b;
+  --color-success: #34d399;
+  --color-danger: #f43f5e;
+  --accent: #1ce39f;
+  --accent-ink: #032217;
+  --color-accent: #1ce39f;
+  --color-accent-ink: #032217;
+  --shadow-card: 0 10px 28px rgb(0 0 0 / 0.28);
+  --shadow-sheet: 0 -10px 32px rgb(0 0 0 / 0.4);
+  color: var(--color-ink);
+}
+
+/* Flat gradient background: cheap to paint on weak phones */
+[data-theme="glass"].glass-bg {
+  background:
+    radial-gradient(circle at 12% 8%, rgb(28 227 159 / 0.14), transparent 40%),
+    linear-gradient(160deg, #062c21 0%, #041b14 50%, #03130e 100%);
+  background-color: var(--color-surface);
+}
+
+/* Blur is used ONLY on header and bottom bars */
+[data-theme="glass"] .glass-blur {
+  background-color: color-mix(in srgb, var(--color-card) 92%, transparent);
+}
+@supports (backdrop-filter: blur(1px)) {
+  [data-theme="glass"] .glass-blur {
+    background-color: color-mix(in srgb, var(--color-card) 70%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+}
