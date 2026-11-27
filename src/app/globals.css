@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./tokens.css";
+@import "./theme-emerald.css";
 
 @theme inline {
   --font-sans: var(--font-inter), var(--font-cairo), system-ui, sans-serif;

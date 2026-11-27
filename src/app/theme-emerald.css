@@ -1,0 +1,17 @@
+/* PinCasting Emerald theme (opt-in). Use: <div data-theme="emerald"> */
+[data-theme="emerald"] {
+  --color-surface: #f2f7f5;
+  --color-card: #ffffff;
+  --color-soft: #e3efeb;
+  --color-ink: #0f2420;
+  --color-muted: #4f6660;
+  --color-line: #d3e3de;
+  --color-success: #15803d;
+  --color-danger: #b91c1c;
+  --accent: #0a6b58;
+  --accent-ink: #ffffff;
+  --color-accent: #0a6b58;
+  --color-accent-ink: #ffffff;
+  --shadow-card: 0 1px 2px rgb(15 36 32 / 0.05), 0 12px 32px rgb(15 36 32 / 0.08);
+  --shadow-sheet: 0 -8px 32px rgb(15 36 32 / 0.14);
+}
