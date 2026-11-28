@@ -9,9 +9,9 @@ import { STORE_DICT } from "@/lib/i18n-store";
 import { listCommunes } from "./actions";
 
 const PRODUCTS = [
-  { id: "01", label: "#01", title: "Leather watch strap", price: 3200 },
-  { id: "02", label: "#02", title: "Carbon magnetic wallet", price: 2900 },
-  { id: "03", label: "#03", title: "Noise cancelling earbuds", price: 4800 },
+  { id: "01", label: "#01", title: { en: "Leather watch strap", fr: "Bracelet de montre en cuir", ar: "\u062D\u0632\u0627\u0645 \u0633\u0627\u0639\u0629 \u062C\u0644\u062F\u064A" }, price: 3200 },
+  { id: "02", label: "#02", title: { en: "Carbon magnetic wallet", fr: "Portefeuille magn\u00E9tique en carbone", ar: "\u0645\u062D\u0641\u0638\u0629 \u0645\u063A\u0646\u0627\u0637\u064A\u0633\u064A\u0629 \u0645\u0646 \u0627\u0644\u0643\u0631\u0628\u0648\u0646" }, price: 2900 },
+  { id: "03", label: "#03", title: { en: "Noise cancelling earbuds", fr: "\u00C9couteurs \u00E0 r\u00E9duction de bruit", ar: "\u0633\u0645\u0627\u0639\u0627\u062A \u0639\u0632\u0644 \u0627\u0644\u0636\u0648\u0636\u0627\u0621" }, price: 4800 },
 ];
 const fmt = new Intl.NumberFormat("fr-DZ");
 
@@ -44,7 +44,7 @@ export function CustomerPreview({ locale }: { locale: Locale }) {
 
   // Prices always read left to right, even inside Arabic text
   const money = (n: number) => (
-    <span dir="ltr" className="g-num">{fmt.format(n)} {t.currency}</span>
+    <span dir="ltr" className="g-num inline-flex items-baseline gap-1"><span>{fmt.format(n)}</span><span>{t.currency}</span></span>
   );
 
   return (
@@ -78,7 +78,7 @@ export function CustomerPreview({ locale }: { locale: Locale }) {
           </div>
 
           <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
-            <h2 className="text-base font-extrabold">{product.title}</h2>
+            <h2 className="text-base font-extrabold">{product.title[locale]}</h2>
             <p className="mt-0.5 text-lg font-extrabold text-emerald-300">{money(product.price)}</p>
           </div>
 
