@@ -13,14 +13,11 @@ async function Content() {
   return (
     <ThemeShell mode={theme} className="px-4 py-6">
       <div dir={dirFor(locale)}>
-        <div className="mx-auto mb-2 flex w-full max-w-[420px] items-center justify-between" dir="ltr">
+        <div className="mx-auto mb-3 flex w-full max-w-[420px] items-center justify-between" dir="ltr">
           <LanguageSwitcher current={locale} />
           <ThemeToggle current={theme} />
         </div>
-        <p className="g-num mx-auto mb-3 w-full max-w-[420px] text-center text-xs opacity-70">
-          Language: {locale.toUpperCase()} / Mode: {theme} (preview text is English only)
-        </p>
-        <CustomerPreview />
+        <CustomerPreview locale={locale} />
       </div>
     </ThemeShell>
   );
