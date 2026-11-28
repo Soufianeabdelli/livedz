@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { CustomerPreview } from "./glass-demo";
 import { ThemeShell } from "@/components/ui/glass";
 import { LanguageSwitcher, ThemeToggle } from "@/components/ui/store-controls";
-import { LOCALE_COOKIE } from "@/lib/i18n";
+import { LOCALE_COOKIE, dirFor } from "@/lib/i18n";
 import { THEME_COOKIE, resolveStoreLocale, resolveTheme } from "@/lib/store-prefs";
 
 async function Content() {
@@ -12,11 +12,16 @@ async function Content() {
   const locale = resolveStoreLocale(jar.get(LOCALE_COOKIE)?.value);
   return (
     <ThemeShell mode={theme} className="px-4 py-6">
-      <div className="mx-auto mb-4 flex w-full max-w-[420px] items-center justify-between">
-        <LanguageSwitcher current={locale} />
-        <ThemeToggle current={theme} />
+      <div dir={dirFor(locale)}>
+        <div className="mx-auto mb-2 flex w-full max-w-[420px] items-center justify-between" dir="ltr">
+          <LanguageSwitcher current={locale} />
+          <ThemeToggle current={theme} />
+        </div>
+        <p className="g-num mx-auto mb-3 w-full max-w-[420px] text-center text-xs opacity-70">
+          Language: {locale.toUpperCase()} / Mode: {theme} (preview text is English only)
+        </p>
+        <CustomerPreview />
       </div>
-      <CustomerPreview />
     </ThemeShell>
   );
 }
