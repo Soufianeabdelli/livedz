@@ -1,9 +1,9 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
 import { cn } from "./cn";
 
-export function ThemeShell({ children, className }: { children: ReactNode; className?: string }) {
+export function ThemeShell({ children, className, mode = "dark" }: { children: ReactNode; className?: string; mode?: "dark" | "light" }) {
   return (
-    <div data-theme="glass" className={cn("g-bg min-h-screen text-ink", className)}>
+    <div data-theme="glass" data-mode={mode} className={cn("g-bg min-h-screen text-ink", className)}>
       {children}
     </div>
   );

@@ -91,3 +91,52 @@
   border-radius: 28px 28px 0 0;
   box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.4);
 }
+/* Light (daytime) mode: <div data-theme="glass" data-mode="light"> */
+[data-theme="glass"][data-mode="light"] {
+  --color-surface: #eef7f3;
+  --color-card: #ffffff;
+  --color-soft: #dcefe8;
+  --color-ink: #0c241c;
+  --color-muted: #3f6458;
+  --color-line: rgb(12 36 28 / 0.14);
+  --accent: #087a58;
+  --accent-ink: #ffffff;
+  --color-accent: #087a58;
+  --color-accent-ink: #ffffff;
+  color: #0c241c;
+}
+[data-theme="glass"][data-mode="light"].g-bg {
+  background-color: #eef7f3;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(28, 227, 159, 0.18), transparent 40%),
+    linear-gradient(145deg, #f3fbf7 0%, #e6f4ee 100%);
+}
+[data-theme="glass"][data-mode="light"] .g-panel,
+[data-theme="glass"][data-mode="light"] .g-card,
+[data-theme="glass"][data-mode="light"] .g-sheet {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(12, 36, 28, 0.12);
+  box-shadow: 0 8px 24px rgba(12, 36, 28, 0.08);
+}
+[data-theme="glass"][data-mode="light"] .g-input {
+  background: #ffffff;
+  border-color: rgba(12, 36, 28, 0.22);
+  color: #0c241c;
+}
+[data-theme="glass"][data-mode="light"] .g-input::placeholder { color: rgba(12, 36, 28, 0.45); }
+[data-theme="glass"][data-mode="light"] .g-input option { background-color: #ffffff; color: #0c241c; }
+[data-theme="glass"][data-mode="light"] .g-seg {
+  background: #ffffff;
+  border-color: rgba(12, 36, 28, 0.22);
+  color: #0c241c;
+}
+[data-theme="glass"][data-mode="light"] .g-seg[aria-checked="true"] {
+  background: linear-gradient(135deg, #22e6a3 0%, #16c784 100%);
+  border-color: #16c784;
+  color: #032217;
+}
+[data-theme="glass"][data-mode="light"] [class*="text-emerald"] { color: #3f6458; }
+[data-theme="glass"][data-mode="light"] [class*="text-emerald-300"] { color: #087a58; }
+[data-theme="glass"][data-mode="light"] .bg-black\/45 { color: #ffffff; }
+[data-theme="glass"][data-mode="light"] .border-white\/10 { border-color: rgba(12, 36, 28, 0.12); }
+[data-theme="glass"][data-mode="light"] .bg-white\/5 { background-color: rgba(12, 36, 28, 0.04); }
